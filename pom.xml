@@ -10,9 +10,9 @@
 	</parent>
 
 	<groupId>com.parallelsymmetry.escape</groupId>
-	<artifactId>update</artifactId>
+	<artifactId>updater</artifactId>
 	<packaging>jar</packaging>
 	
-	<name>Escape Update</name>
+	<name>Escape Updater</name>
 
 </project>
