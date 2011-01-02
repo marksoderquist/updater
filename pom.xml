@@ -43,6 +43,7 @@
 		</resources>
 
 		<plugins>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -60,8 +61,15 @@
 					<descriptors>
 						<descriptor>source/main/assembly/standalone.xml</descriptor>
 					</descriptors>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>com.parallelsymmetry.escape.updater.Program</mainClass>
+            </manifest>
+          </archive>
 				</configuration>
 			</plugin>
+
 		</plugins>
 
 	</build>
