@@ -24,6 +24,24 @@
 	</dependencies>
 
 	<build>
+
+		<resources>
+			<resource>
+				<directory>source/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>**/program.xml</exclude>
+				</excludes>
+			</resource>
+			<resource>
+				<directory>source/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/program.xml</include>
+				</includes>
+			</resource>
+		</resources>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -45,6 +63,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+
 	</build>
 
 </project>

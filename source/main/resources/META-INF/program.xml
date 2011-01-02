@@ -1,0 +1,29 @@
+<program>
+
+	<information>
+		<namespace>${project.groupId}</namespace>
+		<identifier>${project.artifactId}</identifier>
+		<version>${project.version}</version>
+		<timestamp>${buildNumber}</timestamp>
+
+		<name>${project.name}</name>
+		<inception>${project.inceptionYear}</inception>
+		<organization>${project.organization.name}</organization>
+
+		<copyright>
+			<notice>All rights reserved.</notice>
+		</copyright>
+
+		<license>
+			<summary>${project.name} comes with ABSOLUTELY NO WARRANTY. This is open
+				software, and you are welcome to redistribute it under certain
+				conditions.
+			</summary>
+		</license>
+	</information>
+
+	<resources>
+		<java version="1.6" />
+	</resources>
+
+</program>
