@@ -1,9 +1,14 @@
 package com.parallelsymmetry.escape.updater;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.ObjectInputStream;
 import java.security.InvalidParameterException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -14,7 +19,7 @@ import com.parallelsymmetry.escape.utility.TextUtil;
 import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.Log;
 
-public class Program {
+public final class Program {
 
 	private static final String RELEASE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
@@ -41,18 +46,39 @@ public class Program {
 	public void call( String[] commands ) {
 		describe();
 
+		printHeader();
+
 		try {
 			parameters = Parameters.parse( commands, getValidCommandLineFlags() );
 		} catch( InvalidParameterException exception ) {
-			Log.write( exception );
-
+			Log.write( Log.ERROR, exception.getMessage() );
 			help();
 			return;
 		}
 
 		setLogConfiguration( parameters );
 
-		printHeader();
+		if( parameters.isSet( "?" ) || parameters.isSet( "help" ) ) {
+			help();
+			return;
+		}
+
+		String path = parameters.get( "path" );
+		List<File> files = parameters.getFiles();
+
+		if( parameters.isSet( "restart" ) ) {
+			// Read the restart parameters from stdin.
+			try {
+				String[] restartCommands = getRestartCommands();
+			} catch( Exception exception ) {
+				Log.write( exception );
+			}
+		}
+	}
+
+	private String[] getRestartCommands() throws Exception {
+		ObjectInputStream objectInput = new ObjectInputStream( new BufferedInputStream( System.in ) );
+		return (String[])objectInput.readObject();
 	}
 
 	private void describe() {
@@ -76,7 +102,7 @@ public class Program {
 		}
 	}
 
-	private final void printHeader() {
+	private void printHeader() {
 		Log.write( Log.NONE, name + " " + release.toHumanString() );
 		Log.write( Log.NONE, getCopyright() + " " + copyrightNotice );
 		Log.write( Log.NONE );
@@ -88,7 +114,7 @@ public class Program {
 		Log.write( Log.TRACE, "Java: " + System.getProperty( "java.runtime.version" ) );
 	}
 
-	public String getCopyright() {
+	private String getCopyright() {
 		int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
 		return COPYRIGHT + " " + ( currentYear == inceptionYear ? currentYear : inceptionYear + "-" + currentYear ) + " " + copyrightHolder;
 	}
@@ -108,7 +134,15 @@ public class Program {
 	}
 
 	private Set<String> getValidCommandLineFlags() {
-		return null;
+		Set<String> flags = new HashSet<String>();
+
+		flags.add( "?" );
+		flags.add( "help" );
+		flags.add( "version" );
+		flags.add( "log.level" );
+		flags.add( "log.color" );
+
+		return flags;
 	}
 
 	private void setLogConfiguration( Parameters parameters ) {

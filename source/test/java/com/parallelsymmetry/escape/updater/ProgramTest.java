@@ -13,7 +13,6 @@ import junit.framework.TestCase;
 import com.parallelsymmetry.escape.utility.Descriptor;
 import com.parallelsymmetry.escape.utility.LineParser;
 import com.parallelsymmetry.escape.utility.Release;
-import com.parallelsymmetry.escape.utility.TextUtil;
 import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.DefaultHandler;
 import com.parallelsymmetry.escape.utility.log.Log;
@@ -26,6 +25,24 @@ public class ProgramTest extends TestCase {
 		Program program = new Program();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO ) );
 		assertCommandLineHeader( parser );
+	}
+
+	public void testHelpOutput() throws Exception {
+		Program program = new Program();
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-?" ) );
+		assertCommandLineHeader( parser );
+
+		assertEquals( "Usage: java -jar <jar file name> [<option>...]", parser.next() );
+		assertEquals( "", parser.next() );
+		assertEquals( "Options:", parser.next() );
+		assertEquals( "  -help            Show help information.", parser.next() );
+		assertEquals( "  -version         Show version and copyright information only.", parser.next() );
+		assertEquals( "", parser.next() );
+		assertEquals( "  -log.color           Use ANSI color in the console output.", parser.next() );
+		assertEquals( "  -log.level <level>   Change the output log level. Levels are:", parser.next() );
+		assertEquals( "                       none, error, warn, info, trace, debug, all", parser.next() );
+		assertEquals( "", parser.next() );
+		assertNull( parser.next() );
 	}
 
 	private String getCommandLineOutput( Program service, Level level, String... commands ) throws Exception {
@@ -61,4 +78,5 @@ public class ProgramTest extends TestCase {
 		assertEquals( "you are welcome to redistribute it under certain conditions.", parser.next() );
 		assertEquals( "", parser.next() );
 	}
+
 }
