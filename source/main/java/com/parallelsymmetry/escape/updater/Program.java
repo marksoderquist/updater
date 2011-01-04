@@ -69,6 +69,7 @@ public final class Program {
 		if( parameters.isSet( "restart" ) ) {
 			// Read the restart parameters from stdin.
 			try {
+				// FIXME Do this on a worker thread and interrupt the worker if the data isn't found.
 				String[] restartCommands = getRestartCommands();
 			} catch( Exception exception ) {
 				Log.write( exception );
