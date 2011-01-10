@@ -21,8 +21,6 @@ import com.parallelsymmetry.escape.utility.log.Log;
 
 public final class Program {
 
-	private static final String RELEASE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
 	private static final String COPYRIGHT = "(C)";
 
 	private Parameters parameters;
@@ -63,27 +61,13 @@ public final class Program {
 			return;
 		}
 
+		String update = parameters.get( "update" );
 		String path = parameters.get( "path" );
-		List<File> files = parameters.getFiles();
-
-		if( parameters.isSet( "restart" ) ) {
-			// Read the restart parameters from stdin.
-			try {
-				// FIXME Do this on a worker thread and interrupt the worker if the data isn't found.
-				String[] restartCommands = getRestartCommands();
-			} catch( Exception exception ) {
-				Log.write( exception );
-			}
-		}
-	}
-
-	private String[] getRestartCommands() throws Exception {
-		ObjectInputStream objectInput = new ObjectInputStream( new BufferedInputStream( System.in ) );
-		return (String[])objectInput.readObject();
+		String[] launch = parameters.getValues( "launch" );
 	}
 
 	private void describe() {
-		SimpleDateFormat releaseDateFormat = new SimpleDateFormat( RELEASE_DATE_FORMAT );
+		SimpleDateFormat releaseDateFormat = new SimpleDateFormat( Release.DATE_FORMAT );
 		releaseDateFormat.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
 
 		try {
@@ -132,6 +116,12 @@ public final class Program {
 		Log.write( "  -log.color           Use ANSI color in the console output." );
 		Log.write( "  -log.level <level>   Change the output log level. Levels are:" );
 		Log.write( "                       none, error, warn, info, trace, debug, all" );
+		Log.write();
+		Log.write( "  -update <file>   The path to the update file." );
+		Log.write( "  -path <path>     The path to apply the update." );
+		Log.write();
+		Log.write( "  --launch <parameter>... The command line parameters to launch an application" );
+		Log.write( "                          affter the update has been applied." );
 	}
 
 	private Set<String> getValidCommandLineFlags() {
@@ -142,6 +132,10 @@ public final class Program {
 		flags.add( "version" );
 		flags.add( "log.level" );
 		flags.add( "log.color" );
+
+		flags.add( "update" );
+		flags.add( "path" );
+		flags.add( "launch" );
 
 		return flags;
 	}

@@ -42,6 +42,12 @@ public class ProgramTest extends TestCase {
 		assertEquals( "  -log.level <level>   Change the output log level. Levels are:", parser.next() );
 		assertEquals( "                       none, error, warn, info, trace, debug, all", parser.next() );
 		assertEquals( "", parser.next() );
+		assertEquals( "  -update <file>   The path to the update file.", parser.next() );
+		assertEquals( "  -path <path>     The path to apply the update.", parser.next() );
+		assertEquals( "", parser.next() );
+		assertEquals( "  --launch <parameter>... The command line parameters to launch an application", parser.next() );
+		assertEquals( "                          affter the update has been applied.", parser.next() );
+		assertEquals( "", parser.next() );
 		assertNull( parser.next() );
 	}
 
