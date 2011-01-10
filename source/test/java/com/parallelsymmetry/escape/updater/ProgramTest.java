@@ -1,6 +1,7 @@
 package com.parallelsymmetry.escape.updater;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
@@ -13,6 +14,7 @@ import java.util.logging.Level;
 import junit.framework.TestCase;
 
 import com.parallelsymmetry.escape.utility.Descriptor;
+import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.LineParser;
 import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Release;
@@ -25,6 +27,10 @@ public class ProgramTest extends TestCase {
 	private static final String RELEASE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
 	private Program program;
+
+	public void setUp() {
+		Log.setLevel( Log.NONE );
+	}
 
 	public void testCommandLineOutput() throws Exception {
 		program = new Program();
@@ -56,6 +62,56 @@ public class ProgramTest extends TestCase {
 		assertCommandLineHeader( parser );
 		assertCommandLineHelp( parser );
 		assertNull( parser.next() );
+	}
+
+	public void testUpdateOutputWithNoSource() throws Exception {
+		program = new Program();
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update" ) );
+		assertCommandLineHeader( parser );
+		assertEquals( "java.lang.IllegalArgumentException: Source parameter not specified.", parser.next() );
+	}
+
+	public void testUpdateOutputWithMissingSource() throws Exception {
+		program = new Program();
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "-source", "invalid.zip", "-target", "target/test/update" ) );
+		assertCommandLineHeader( parser );
+		assertEquals( "java.lang.IllegalArgumentException: Source parameter not found: invalid.zip", parser.next() );
+	}
+
+	public void testUpdateOutputWithInvalidSource() throws Exception {
+		program = new Program();
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "-source", "source/test/resources/invalid.zip", "-target", "target/test/update" ) );
+		assertCommandLineHeader( parser );
+		assertEquals( "java.lang.RuntimeException: Source not a valid zip file: source" + File.separator + "test" + File.separator + "resources" + File.separator + "invalid.zip", parser.next() );
+	}
+
+	public void testUpdateOutputWithNoTarget() throws Exception {
+		program = new Program();
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "-source", "test.zip" ) );
+		assertCommandLineHeader( parser );
+		assertEquals( "java.lang.IllegalArgumentException: Target parameter not specified.", parser.next() );
+	}
+
+	public void testUpdateOutputWithMissingTarget() throws Exception {
+		program = new Program();
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "-source", "source/test/resources/update.zip", "-target", "target/invalid" ) );
+		assertCommandLineHeader( parser );
+		assertEquals( "java.lang.IllegalArgumentException: Target parameter not found: target" + File.separator + "invalid", parser.next() );
+	}
+
+	public void testUpdate() throws Exception {
+		Log.setLevel( Log.DEBUG );
+		program = new Program();
+
+		File source = new File( "source/test/resources/update.zip" );
+		File target = new File( "target/test/update" );
+
+		FileUtil.delete( target );
+		target.mkdirs();
+		assertTrue( target.exists() );
+
+		// FIXME Finish implementing update().
+		//program.update( source, target );
 	}
 
 	private String getCommandLineOutput( Program service, Level level, String... commands ) throws Exception {
@@ -105,9 +161,9 @@ public class ProgramTest extends TestCase {
 		assertEquals( "Usage: java -jar <jar file name> [<option>...]", parser.next() );
 		assertEquals( "", parser.next() );
 		assertEquals( "Commands:", parser.next() );
-		assertEquals( "  -update -file <file> -path <path> [-launch command...]", parser.next() );
-		assertEquals( "    Use the specified file to update the specified path. If the launch", parser.next() );
-		assertEquals( "    parameter is specified then the launch commands are executed.", parser.next() );
+		assertEquals( "  -update -source <file> -target <path> [-launch command...]", parser.next() );
+		assertEquals( "    Use the specified source file to update the specified target path.", parser.next() );
+		assertEquals( "    If the launch parameter is specified then the launch commands are executed.", parser.next() );
 		assertEquals( "", parser.next() );
 		assertEquals( "Options:", parser.next() );
 		assertEquals( "  -help            Show help information.", parser.next() );
@@ -116,12 +172,6 @@ public class ProgramTest extends TestCase {
 		assertEquals( "  -log.color           Use ANSI color in the console output.", parser.next() );
 		assertEquals( "  -log.level <level>   Change the output log level. Levels are:", parser.next() );
 		assertEquals( "                       none, error, warn, info, trace, debug, all", parser.next() );
-		assertEquals( "", parser.next() );
-		assertEquals( "  -update <file>   The path to the update file.", parser.next() );
-		assertEquals( "  -path <path>     The path to apply the update.", parser.next() );
-		assertEquals( "", parser.next() );
-		assertEquals( "  --launch <parameter>... The command line parameters to launch an application", parser.next() );
-		assertEquals( "                          after the update has been applied.", parser.next() );
 		assertEquals( "", parser.next() );
 	}
 
