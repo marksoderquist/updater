@@ -2,9 +2,11 @@ package com.parallelsymmetry.escape.updater;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
 
@@ -12,6 +14,7 @@ import junit.framework.TestCase;
 
 import com.parallelsymmetry.escape.utility.Descriptor;
 import com.parallelsymmetry.escape.utility.LineParser;
+import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Release;
 import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.DefaultHandler;
@@ -21,33 +24,37 @@ public class ProgramTest extends TestCase {
 
 	private static final String RELEASE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
+	private Program program;
+
 	public void testCommandLineOutput() throws Exception {
-		Program program = new Program();
+		program = new Program();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO ) );
 		assertCommandLineHeader( parser );
+		assertCommandLineHelp( parser );
+		assertNull( parser.next() );
+	}
+
+	public void testVersionOutput() throws Exception {
+		program = new Program();
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-version" ) );
+		assertCommandLineHeader( parser );
+		assertCommandLineVersion( parser );
+		assertNull( parser.next() );
+	}
+
+	public void testQuestionOutput() throws Exception {
+		program = new Program();
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-?" ) );
+		assertCommandLineHeader( parser );
+		assertCommandLineHelp( parser );
+		assertNull( parser.next() );
 	}
 
 	public void testHelpOutput() throws Exception {
-		Program program = new Program();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-?" ) );
+		program = new Program();
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-help" ) );
 		assertCommandLineHeader( parser );
-
-		assertEquals( "Usage: java -jar <jar file name> [<option>...]", parser.next() );
-		assertEquals( "", parser.next() );
-		assertEquals( "Options:", parser.next() );
-		assertEquals( "  -help            Show help information.", parser.next() );
-		assertEquals( "  -version         Show version and copyright information only.", parser.next() );
-		assertEquals( "", parser.next() );
-		assertEquals( "  -log.color           Use ANSI color in the console output.", parser.next() );
-		assertEquals( "  -log.level <level>   Change the output log level. Levels are:", parser.next() );
-		assertEquals( "                       none, error, warn, info, trace, debug, all", parser.next() );
-		assertEquals( "", parser.next() );
-		assertEquals( "  -update <file>   The path to the update file.", parser.next() );
-		assertEquals( "  -path <path>     The path to apply the update.", parser.next() );
-		assertEquals( "", parser.next() );
-		assertEquals( "  --launch <parameter>... The command line parameters to launch an application", parser.next() );
-		assertEquals( "                          affter the update has been applied.", parser.next() );
-		assertEquals( "", parser.next() );
+		assertCommandLineHelp( parser );
 		assertNull( parser.next() );
 	}
 
@@ -77,11 +84,44 @@ public class ProgramTest extends TestCase {
 		Release release = new Release( version, date );
 		int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
 
-		assertEquals( "Escape Updater " + release.toHumanString(), parser.next() );
+		assertEquals( "Escape Updater " + release.getVersion().toHumanString(), parser.next() );
 		assertEquals( "(C) 2010-" + currentYear + " Parallel Symmetry All rights reserved.", parser.next() );
 		assertEquals( "", parser.next() );
 		assertEquals( "Escape Updater comes with ABSOLUTELY NO WARRANTY. This is open software, and", parser.next() );
 		assertEquals( "you are welcome to redistribute it under certain conditions.", parser.next() );
+		assertEquals( "", parser.next() );
+	}
+
+	private void assertCommandLineVersion( LineParser parser ) throws Exception {
+		assertEquals( "Version: " + program.getRelease().getRelease(), parser.next() );
+		assertEquals( "Java version: " + System.getProperty( "java.version" ), parser.next() );
+		assertEquals( "Java home: " + System.getProperty( "java.home" ), parser.next() );
+		assertEquals( "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset(), parser.next() );
+		assertEquals( "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily(), parser.next() );
+		assertEquals( "", parser.next() );
+	}
+
+	private void assertCommandLineHelp( LineParser parser ) throws Exception {
+		assertEquals( "Usage: java -jar <jar file name> [<option>...]", parser.next() );
+		assertEquals( "", parser.next() );
+		assertEquals( "Commands:", parser.next() );
+		assertEquals( "  -update -file <file> -path <path> [-launch command...]", parser.next() );
+		assertEquals( "    Use the specified file to update the specified path. If the launch", parser.next() );
+		assertEquals( "    parameter is specified then the launch commands are executed.", parser.next() );
+		assertEquals( "", parser.next() );
+		assertEquals( "Options:", parser.next() );
+		assertEquals( "  -help            Show help information.", parser.next() );
+		assertEquals( "  -version         Show version and copyright information only.", parser.next() );
+		assertEquals( "", parser.next() );
+		assertEquals( "  -log.color           Use ANSI color in the console output.", parser.next() );
+		assertEquals( "  -log.level <level>   Change the output log level. Levels are:", parser.next() );
+		assertEquals( "                       none, error, warn, info, trace, debug, all", parser.next() );
+		assertEquals( "", parser.next() );
+		assertEquals( "  -update <file>   The path to the update file.", parser.next() );
+		assertEquals( "  -path <path>     The path to apply the update.", parser.next() );
+		assertEquals( "", parser.next() );
+		assertEquals( "  --launch <parameter>... The command line parameters to launch an application", parser.next() );
+		assertEquals( "                          after the update has been applied.", parser.next() );
 		assertEquals( "", parser.next() );
 	}
 

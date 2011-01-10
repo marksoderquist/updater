@@ -1,18 +1,18 @@
 package com.parallelsymmetry.escape.updater;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.ObjectInputStream;
+import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 
 import com.parallelsymmetry.escape.utility.Descriptor;
+import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Parameters;
 import com.parallelsymmetry.escape.utility.Release;
 import com.parallelsymmetry.escape.utility.TextUtil;
@@ -50,20 +50,42 @@ public final class Program {
 			parameters = Parameters.parse( commands, getValidCommandLineFlags() );
 		} catch( InvalidParameterException exception ) {
 			Log.write( Log.ERROR, exception.getMessage() );
-			help();
+			printHelp();
 			return;
 		}
 
 		setLogConfiguration( parameters );
 
 		if( parameters.isSet( "?" ) || parameters.isSet( "help" ) ) {
-			help();
+			printHelp();
+			return;
+		} else if( parameters.isSet( "version" ) ) {
+			printVersion();
 			return;
 		}
 
-		String update = parameters.get( "update" );
-		String path = parameters.get( "path" );
-		String[] launch = parameters.getValues( "launch" );
+		try {
+			if( parameters.isSet( "update" ) ) {
+				String file = parameters.get( "file" );
+				String path = parameters.get( "path" );
+				if( file == null ) throw new IllegalArgumentException( "File parameter not specified." );
+				if( path == null ) throw new IllegalArgumentException( "Path parameter not specified." );
+				update( new File( file ), new File( path ) );
+			} else {
+				printHelp();
+				return;
+			}
+		} catch( Throwable throwable ) {
+			Log.write( throwable );
+		}
+	}
+
+	public Release getRelease() {
+		return release;
+	}
+
+	private void update( File file, File path ) {
+
 	}
 
 	private void describe() {
@@ -88,7 +110,7 @@ public final class Program {
 	}
 
 	private void printHeader() {
-		Log.write( Log.NONE, name + " " + release.toHumanString() );
+		Log.write( Log.NONE, name + " " + release.getVersion().toHumanString() );
 		Log.write( Log.NONE, getCopyright() + " " + copyrightNotice );
 		Log.write( Log.NONE );
 		if( licenseSummary != null ) {
@@ -104,10 +126,23 @@ public final class Program {
 		return COPYRIGHT + " " + ( currentYear == inceptionYear ? currentYear : inceptionYear + "-" + currentYear ) + " " + copyrightHolder;
 	}
 
-	private void help() {
+	private void printVersion() {
+		Log.write( "Version: " + getRelease().getRelease() );
+		Log.write( "Java version: " + System.getProperty( "java.version" ) );
+		Log.write( "Java home: " + System.getProperty( "java.home" ) );
+		Log.write( "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
+		Log.write( "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
+	}
+
+	private void printHelp() {
 		// ---------0--------1---------2---------3---------4---------5---------6---------7---------8
 		// ---------12345678901234567890123456789012345678901234567890123456789012345678901234567890
 		Log.write( "Usage: java -jar <jar file name> [<option>...]" );
+		Log.write();
+		Log.write( "Commands:" );
+		Log.write( "  -update -file <file> -path <path> [-launch command...]" );
+		Log.write( "    Use the specified file to update the specified path. If the launch" );
+		Log.write( "    parameter is specified then the launch commands are executed." );
 		Log.write();
 		Log.write( "Options:" );
 		Log.write( "  -help            Show help information." );
@@ -121,7 +156,7 @@ public final class Program {
 		Log.write( "  -path <path>     The path to apply the update." );
 		Log.write();
 		Log.write( "  --launch <parameter>... The command line parameters to launch an application" );
-		Log.write( "                          affter the update has been applied." );
+		Log.write( "                          after the update has been applied." );
 	}
 
 	private Set<String> getValidCommandLineFlags() {
@@ -134,6 +169,7 @@ public final class Program {
 		flags.add( "log.color" );
 
 		flags.add( "update" );
+		flags.add( "file" );
 		flags.add( "path" );
 		flags.add( "launch" );
 
