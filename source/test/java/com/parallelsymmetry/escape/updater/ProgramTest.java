@@ -220,7 +220,7 @@ public class ProgramTest extends TestCase {
 		assertEquals( "Usage: java -jar <jar file name> [<option>...]", parser.next() );
 		assertEquals( "", parser.next() );
 		assertEquals( "Commands:", parser.next() );
-		assertEquals( "  --update <file file>... [--launch command...]", parser.next() );
+		assertEquals( "  --update <file file>... [--launch command... [-launch.home folder]]", parser.next() );
 		assertEquals( "    Update files in pairs of two using the first as the source and the second", parser.next() );
 		assertEquals( "    as the target. If the launch parameter is specified then the launch", parser.next() );
 		assertEquals( "    commands are executed after the updates have been processed.", parser.next() );

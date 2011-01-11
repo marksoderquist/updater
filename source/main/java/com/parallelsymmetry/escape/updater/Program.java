@@ -43,6 +43,8 @@ public final class Program {
 
 	private static final String LAUNCH = "launch";
 
+	private static final String LAUNCH_HOME = "launch.home";
+
 	private static final String DEL_SUFFIX = ".del";
 
 	private static final String ADD_SUFFIX = ".add";
@@ -130,12 +132,6 @@ public final class Program {
 		} catch( Throwable throwable ) {
 			Log.write( throwable );
 		}
-	}
-
-	private void launch( Parameters parameters ) throws IOException {
-		List<String> values = parameters.getValues( LAUNCH );
-		String[] commands = values.toArray( new String[values.size()] );
-		Runtime.getRuntime().exec( commands );
 	}
 
 	public void update( File source, File target ) throws IOException {
@@ -229,6 +225,19 @@ public final class Program {
 		}
 	}
 
+	private void launch( Parameters parameters ) throws IOException {
+		List<String> values = parameters.getValues( LAUNCH );
+		String[] commands = values.toArray( new String[values.size()] );
+
+		String workFolder = parameters.get( LAUNCH_HOME );
+
+		if( workFolder == null ) {
+			Runtime.getRuntime().exec( commands );
+		} else {
+			Runtime.getRuntime().exec( commands, null, new File( workFolder ) );
+		}
+	}
+
 	private void describe() {
 		SimpleDateFormat releaseDateFormat = new SimpleDateFormat( Release.DATE_FORMAT );
 		releaseDateFormat.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
@@ -278,7 +287,7 @@ public final class Program {
 		Log.write( "Usage: java -jar <jar file name> [<option>...]" );
 		Log.write();
 		Log.write( "Commands:" );
-		Log.write( "  --update <file file>... [--launch command...]" );
+		Log.write( "  --update <file file>... [--launch command... [-launch.home folder]]" );
 		Log.write( "    Update files in pairs of two using the first as the source and the second" );
 		Log.write( "    as the target. If the launch parameter is specified then the launch" );
 		Log.write( "    commands are executed after the updates have been processed." );
@@ -303,6 +312,7 @@ public final class Program {
 
 		flags.add( UPDATE );
 		flags.add( LAUNCH );
+		flags.add( LAUNCH_HOME );
 
 		return flags;
 	}
