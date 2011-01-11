@@ -107,28 +107,28 @@ public class ProgramTest extends TestCase {
 
 	public void testUpdateOutputWithNoSource() throws Exception {
 		program = new Program();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update" ) );
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "java.lang.IllegalArgumentException: No update files specified.", parser.next() );
 	}
 
 	public void testUpdateOutputWithNoTarget() throws Exception {
 		program = new Program();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "--", "test.zip" ) );
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "test.zip" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "java.lang.IllegalArgumentException: Target parameter not specified.", parser.next() );
 	}
 
 	public void testUpdateOutputWithInvalidSource() throws Exception {
 		program = new Program();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "--", "source/test/resources/invalid.zip", "target/test/update" ) );
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "java.io.IOException: Source not a valid zip file: source" + File.separator + "test" + File.separator + "resources" + File.separator + "invalid.zip", parser.next() );
 	}
 
 	public void testUpdateOutputWithMissingTarget() throws Exception {
 		program = new Program();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "--", "source/test/resources/invalid.zip", "target/invalid" ) );
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/invalid" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "java.lang.IllegalArgumentException: Target parameter not found: target" + File.separator + "invalid", parser.next() );
 	}
@@ -160,7 +160,7 @@ public class ProgramTest extends TestCase {
 	public void testSimultaneousUpdate() throws Exception {
 		program = new Program();
 
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "--", "source/test/resources/update1.zip", "target/test/update", "source/test/resources/update2.zip", "target/test/update" ) );
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/update1.zip", "target/test/update", "source/test/resources/update2.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
 
 		assertEquals( "Sample 1 Version 2", FileUtil.load( sample1 ).trim() );
@@ -220,7 +220,7 @@ public class ProgramTest extends TestCase {
 		assertEquals( "Usage: java -jar <jar file name> [<option>...]", parser.next() );
 		assertEquals( "", parser.next() );
 		assertEquals( "Commands:", parser.next() );
-		assertEquals( "  -update [-launch command...] <file file>...", parser.next() );
+		assertEquals( "  --update <file file>... [--launch command...]", parser.next() );
 		assertEquals( "    Update files in pairs of two using the first as the source and the second", parser.next() );
 		assertEquals( "    as the target. If the launch parameter is specified then the launch", parser.next() );
 		assertEquals( "    commands are executed after the updates have been processed.", parser.next() );

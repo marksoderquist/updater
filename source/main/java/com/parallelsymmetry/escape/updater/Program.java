@@ -26,7 +26,6 @@ import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Parameters;
 import com.parallelsymmetry.escape.utility.Release;
 import com.parallelsymmetry.escape.utility.TextUtil;
-import com.parallelsymmetry.escape.utility.ThreadUtil;
 import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.Log;
 
@@ -98,22 +97,22 @@ public final class Program {
 		}
 
 		if( parameters.isSet( UPDATE ) ) {
-			List<File> files = parameters.getFiles();
+			List<String> files = parameters.getValues( UPDATE );
 
 			try {
 				int index = 0;
 				int count = files.size();
 
-				if( count == 0 ) throw new IllegalArgumentException( "No update files specified." );
+				if( count == 0 || "true".equals( parameters.get( UPDATE ) ) ) throw new IllegalArgumentException( "No update files specified." );
 
 				while( index < count ) {
-					File source = null;
-					File target = null;
+					String source = null;
+					String target = null;
 					if( index < count ) source = files.get( index );
 					if( index + 1 < count ) target = files.get( index + 1 );
 					if( source == null ) throw new IllegalArgumentException( "Source parameter not specified." );
 					if( target == null ) throw new IllegalArgumentException( "Target parameter not specified." );
-					update( source, target );
+					update( new File( source ), new File( target ) );
 					index += 2;
 				}
 			} catch( Throwable throwable ) {
@@ -275,7 +274,7 @@ public final class Program {
 		Log.write( "Usage: java -jar <jar file name> [<option>...]" );
 		Log.write();
 		Log.write( "Commands:" );
-		Log.write( "  -update [-launch command...] <file file>..." );
+		Log.write( "  --update <file file>... [--launch command...]" );
 		Log.write( "    Update files in pairs of two using the first as the source and the second" );
 		Log.write( "    as the target. If the launch parameter is specified then the launch" );
 		Log.write( "    commands are executed after the updates have been processed." );
