@@ -43,8 +43,6 @@ public final class Program {
 
 	private static final String LAUNCH = "launch";
 
-	private static final String OLD_SUFFIX = ".old";
-
 	private static final String DEL_SUFFIX = ".del";
 
 	private static final String ADD_SUFFIX = ".add";
@@ -75,53 +73,69 @@ public final class Program {
 
 	public void call( String[] commands ) {
 		try {
-			parameters = Parameters.parse( commands, getValidCommandLineFlags() );
-		} catch( InvalidParameterException exception ) {
-			Log.write( Log.ERROR, exception.getMessage() );
-			printHelp();
-			return;
-		}
-
-		configureLog( parameters );
-
-		describe();
-
-		printHeader();
-
-		if( parameters.isSet( WHAT ) || parameters.isSet( HELP ) ) {
-			printHelp();
-			return;
-		} else if( parameters.isSet( VERSION ) ) {
-			printVersion();
-			return;
-		}
-
-		if( parameters.isSet( UPDATE ) ) {
-			List<String> files = parameters.getValues( UPDATE );
-
 			try {
-				int index = 0;
-				int count = files.size();
-
-				if( count == 0 || "true".equals( parameters.get( UPDATE ) ) ) throw new IllegalArgumentException( "No update files specified." );
-
-				while( index < count ) {
-					String source = null;
-					String target = null;
-					if( index < count ) source = files.get( index );
-					if( index + 1 < count ) target = files.get( index + 1 );
-					if( source == null ) throw new IllegalArgumentException( "Source parameter not specified." );
-					if( target == null ) throw new IllegalArgumentException( "Target parameter not specified." );
-					update( new File( source ), new File( target ) );
-					index += 2;
-				}
-			} catch( Throwable throwable ) {
-				Log.write( throwable );
+				parameters = Parameters.parse( commands, getValidCommandLineFlags() );
+			} catch( InvalidParameterException exception ) {
+				Log.write( Log.ERROR, exception.getMessage() );
+				printHelp();
+				return;
 			}
-		} else {
-			printHelp();
-			return;
+
+			configureLog( parameters );
+
+			describe();
+
+			printHeader();
+
+			if( parameters.isSet( WHAT ) || parameters.isSet( HELP ) ) {
+				printHelp();
+				return;
+			} else if( parameters.isSet( VERSION ) ) {
+				printVersion();
+				return;
+			}
+
+			if( parameters.isSet( UPDATE ) ) {
+				List<String> files = parameters.getValues( UPDATE );
+
+				try {
+					int index = 0;
+					int count = files.size();
+
+					if( count == 0 || "true".equals( parameters.get( UPDATE ) ) ) throw new IllegalArgumentException( "No update files specified." );
+
+					while( index < count ) {
+						String source = null;
+						String target = null;
+						if( index < count ) source = files.get( index );
+						if( index + 1 < count ) target = files.get( index + 1 );
+						if( source == null ) throw new IllegalArgumentException( "Source parameter not specified." );
+						if( target == null ) throw new IllegalArgumentException( "Target parameter not specified." );
+						update( new File( source ), new File( target ) );
+						index += 2;
+					}
+				} catch( RuntimeException exception ) {
+					Log.write( exception );
+				}
+			} else if( parameters.isSet( LAUNCH ) ) {
+				try {
+					launch( parameters );
+				} catch( IOException exception ) {
+					Log.write( exception );
+				}
+			} else {
+				printHelp();
+				return;
+			}
+		} catch( Throwable throwable ) {
+			Log.write( throwable );
 		}
+	}
+
+	private void launch( Parameters parameters ) throws IOException {
+		List<String> values = parameters.getValues( LAUNCH );
+		String[] commands = values.toArray( new String[values.size()] );
+		Runtime.getRuntime().exec( commands );
 	}
 
 	public void update( File source, File target ) throws IOException {
@@ -149,7 +163,6 @@ public final class Program {
 	private void stage( ZipFile source, File target ) throws IOException {
 		Log.write( Log.DEBUG, "Staging: " + source.getName() + " to " + target + "..." );
 
-		// Go through each resource in the update file and move any existing resource to a stage name.
 		Enumeration<? extends ZipEntry> entries = source.entries();
 		while( entries.hasMoreElements() ) {
 			ZipEntry entry = entries.nextElement();
@@ -185,8 +198,6 @@ public final class Program {
 	}
 
 	private void commit( File target ) {
-		Log.write( Log.DEBUG, "Committing: " + target + "..." );
-
 		// Commit staged changes to their original state.
 		if( target.isDirectory() ) {
 			File[] files = target.listFiles();
@@ -197,17 +208,12 @@ public final class Program {
 			if( target.getName().endsWith( ADD_SUFFIX ) ) {
 				target.renameTo( FileUtil.removeExtension( target ) );
 			} else if( target.getName().endsWith( DEL_SUFFIX ) ) {
-				//target.renameTo( new File( FileUtil.removeExtension( target ) + OLD_SUFFIX ) );
 				target.delete();
 			}
 		}
-
-		Log.write( Log.TRACE, "Committed: " + target );
 	}
 
 	private void revert( File target ) {
-		Log.write( Log.DEBUG, "Reverting: " + target + "..." );
-
 		// Revert staged changes to their original state.
 		if( target.isDirectory() ) {
 			File[] files = target.listFiles();
@@ -221,8 +227,6 @@ public final class Program {
 				target.delete();
 			}
 		}
-
-		Log.write( Log.TRACE, "Reverted: " + target );
 	}
 
 	private void describe() {
