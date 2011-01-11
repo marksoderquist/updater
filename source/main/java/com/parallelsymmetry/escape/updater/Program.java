@@ -26,6 +26,7 @@ import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Parameters;
 import com.parallelsymmetry.escape.utility.Release;
 import com.parallelsymmetry.escape.utility.TextUtil;
+import com.parallelsymmetry.escape.utility.ThreadUtil;
 import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.Log;
 
@@ -167,10 +168,18 @@ public final class Program {
 			if( !file.exists() && !file.mkdirs() ) throw new IOException( "Could not create folder: " + file );
 		} else {
 			if( file.exists() ) {
-				File stageFile = new File( file.getAbsolutePath() + DEL_SUFFIX );
-				if( !file.renameTo( stageFile ) ) throw new IOException( "Could not remname file: " + file );
+				File delFile = new File( file.getAbsolutePath() + DEL_SUFFIX );
+				if( !file.renameTo( delFile ) ) throw new IOException( "Could not rename file: " + file );
 			}
-			IoUtil.copy( input, new FileOutputStream( new File( file.getAbsolutePath() + ADD_SUFFIX ) ) );
+			File addFile = new File( file.getAbsolutePath() + ADD_SUFFIX );
+			addFile.getParentFile().mkdirs();
+			FileOutputStream output = null;
+			try {
+				output = new FileOutputStream( addFile );
+				IoUtil.copy( input, output );
+			} finally {
+				if( output != null ) output.close();
+			}
 		}
 
 		return true;

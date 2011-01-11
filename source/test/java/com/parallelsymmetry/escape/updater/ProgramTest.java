@@ -28,6 +28,8 @@ public class ProgramTest extends TestCase {
 
 	private Program program;
 
+	private File source = new File( "source/test/resources" );
+
 	private File target = new File( "target/test/update" );
 
 	private File sample1 = new File( target, "sample.1.txt" );
@@ -46,21 +48,29 @@ public class ProgramTest extends TestCase {
 
 	private File file2_2 = new File( folder2, "file.2.2.txt" );
 
+	private File update0 = new File( source, "update0.zip" );
+
+	private File update1 = new File( source, "update1.zip" );
+
+	private File update2 = new File( source, "update2.zip" );
+
 	public void setUp() throws Exception {
 		Log.setLevel( Log.NONE );
-
-		File folder2 = new File( target, "folder2" );
-		File oldFile2_2 = new File( "source/test/resources/file.2.2.txt" );
-		File oldSample1 = new File( "source/test/resources/sample.1.txt" );
 
 		FileUtil.delete( target );
 		target.mkdirs();
 		assertTrue( target.exists() );
-		assertTrue( folder2.mkdirs() );
-		assertTrue( FileUtil.copy( oldFile2_2, folder2 ) );
-		assertTrue( FileUtil.copy( oldSample1, target ) );
 
-		assertEquals( "Old Sample 1", FileUtil.load( sample1 ).trim() );
+		FileUtil.unzip( update0, target );
+
+		assertEquals( "Sample 1 Version 0", FileUtil.load( sample1 ).trim() );
+		assertFalse( sample2.exists() );
+		assertFalse( folder1.exists() );
+		assertFalse( file1_1.exists() );
+		assertFalse( file1_2.exists() );
+		assertTrue( folder2.exists() );
+		assertFalse( file2_1.exists() );
+		assertEquals( "File 2.2 Version 0", FileUtil.load( file2_2 ).trim() );
 	}
 
 	public void testCommandLineOutput() throws Exception {
@@ -124,54 +134,43 @@ public class ProgramTest extends TestCase {
 	}
 
 	public void testUpdate() throws Exception {
-		Log.setLevel( Log.TRACE );
 		program = new Program();
 
-		assertEquals( "Old Sample 1", FileUtil.load( sample1 ).trim() );
-		assertFalse( sample2.exists() );
-		assertFalse( folder1.exists() );
-		assertFalse( file1_1.exists() );
-		assertFalse( file1_2.exists() );
-		assertTrue( folder2.exists() );
-		assertFalse( file2_1.exists() );
-		assertEquals( "Old File 2.2", FileUtil.load( file2_2 ).trim() );
-
-		program.update( new File( "source/test/resources/sample1.zip" ), target );
-
-		assertEquals( "New Sample 1", FileUtil.load( sample1 ).trim() );
-		assertEquals( "New Sample 2", FileUtil.load( sample2 ).trim() );
+		program.update( update1, target );
+		assertEquals( "Sample 1 Version 1", FileUtil.load( sample1 ).trim() );
+		assertEquals( "Sample 2 Version 1", FileUtil.load( sample2 ).trim() );
 		assertTrue( folder1.exists() );
-		assertEquals( "New File 1.1", FileUtil.load( file1_1 ).trim() );
-		assertEquals( "New File 1.2", FileUtil.load( file1_2 ).trim() );
+		assertEquals( "File 1.1 Version 1", FileUtil.load( file1_1 ).trim() );
+		assertEquals( "File 1.2 Version 1", FileUtil.load( file1_2 ).trim() );
 		assertTrue( folder2.exists() );
-		assertEquals( "New File 2.1", FileUtil.load( file2_1 ).trim() );
-		assertEquals( "New File 2.2", FileUtil.load( file2_2 ).trim() );
+		assertEquals( "File 2.1 Version 1", FileUtil.load( file2_1 ).trim() );
+		assertEquals( "File 2.2 Version 1", FileUtil.load( file2_2 ).trim() );
+
+		program.update( update2, target );
+		assertEquals( "Sample 1 Version 2", FileUtil.load( sample1 ).trim() );
+		assertEquals( "Sample 2 Version 2", FileUtil.load( sample2 ).trim() );
+		assertTrue( folder1.exists() );
+		assertEquals( "File 1.1 Version 2", FileUtil.load( file1_1 ).trim() );
+		assertEquals( "File 1.2 Version 2", FileUtil.load( file1_2 ).trim() );
+		assertTrue( folder2.exists() );
+		assertEquals( "File 2.1 Version 2", FileUtil.load( file2_1 ).trim() );
+		assertEquals( "File 2.2 Version 2", FileUtil.load( file2_2 ).trim() );
 	}
 
-	public void testDoubleUpdate() throws Exception {
+	public void testSimultaneousUpdate() throws Exception {
 		program = new Program();
 
-		assertEquals( "Old Sample 1", FileUtil.load( sample1 ).trim() );
-		assertFalse( sample2.exists() );
-		assertFalse( folder1.exists() );
-		assertFalse( file1_1.exists() );
-		assertFalse( file1_2.exists() );
-		assertTrue( folder2.exists() );
-		assertFalse( file2_1.exists() );
-		assertEquals( "Old File 2.2", FileUtil.load( file2_2 ).trim() );
-
-		// FIXME Create a sample2.zip with newer context and verify.
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "--", "source/test/resources/sample1.zip", "target/test/update", "source/test/resources/sample1.zip", "target/test/update" ) );
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "--", "source/test/resources/update1.zip", "target/test/update", "source/test/resources/update2.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
 
-		assertEquals( "New Sample 1", FileUtil.load( sample1 ).trim() );
-		assertEquals( "New Sample 2", FileUtil.load( sample2 ).trim() );
+		assertEquals( "Sample 1 Version 2", FileUtil.load( sample1 ).trim() );
+		assertEquals( "Sample 2 Version 2", FileUtil.load( sample2 ).trim() );
 		assertTrue( folder1.exists() );
-		assertEquals( "New File 1.1", FileUtil.load( file1_1 ).trim() );
-		assertEquals( "New File 1.2", FileUtil.load( file1_2 ).trim() );
+		assertEquals( "File 1.1 Version 2", FileUtil.load( file1_1 ).trim() );
+		assertEquals( "File 1.2 Version 2", FileUtil.load( file1_2 ).trim() );
 		assertTrue( folder2.exists() );
-		assertEquals( "New File 2.1", FileUtil.load( file2_1 ).trim() );
-		assertEquals( "New File 2.2", FileUtil.load( file2_2 ).trim() );
+		assertEquals( "File 2.1 Version 2", FileUtil.load( file2_1 ).trim() );
+		assertEquals( "File 2.2 Version 2", FileUtil.load( file2_2 ).trim() );
 	}
 
 	private String getCommandLineOutput( Program service, Level level, String... commands ) throws Exception {
