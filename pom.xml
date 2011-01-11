@@ -58,7 +58,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<appendAssemblyId>false</appendAssemblyId>
 					<descriptors>
 						<descriptor>source/main/assembly/standalone.xml</descriptor>
 					</descriptors>
