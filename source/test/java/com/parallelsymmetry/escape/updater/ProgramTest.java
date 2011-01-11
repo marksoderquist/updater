@@ -30,12 +30,37 @@ public class ProgramTest extends TestCase {
 
 	private File target = new File( "target/test/update" );
 
-	public void setUp() {
+	private File sample1 = new File( target, "sample.1.txt" );
+
+	private File sample2 = new File( target, "sample.2.txt" );
+
+	private File folder1 = new File( target, "folder1" );
+
+	private File file1_1 = new File( folder1, "file.1.1.txt" );
+
+	private File file1_2 = new File( folder1, "file.1.2.txt" );
+
+	private File folder2 = new File( target, "folder2" );
+
+	private File file2_1 = new File( folder2, "file.2.1.txt" );
+
+	private File file2_2 = new File( folder2, "file.2.2.txt" );
+
+	public void setUp() throws Exception {
 		Log.setLevel( Log.NONE );
 
+		File folder2 = new File( target, "folder2" );
+		File oldFile2_2 = new File( "source/test/resources/file.2.2.txt" );
+		File oldSample1 = new File( "source/test/resources/sample.1.txt" );
+
 		FileUtil.delete( target );
-		new File( "target/test/update" ).mkdirs();
+		target.mkdirs();
 		assertTrue( target.exists() );
+		assertTrue( folder2.mkdirs() );
+		assertTrue( FileUtil.copy( oldFile2_2, folder2 ) );
+		assertTrue( FileUtil.copy( oldSample1, target ) );
+
+		assertEquals( "Old Sample 1", FileUtil.load( sample1 ).trim() );
 	}
 
 	public void testCommandLineOutput() throws Exception {
@@ -74,45 +99,79 @@ public class ProgramTest extends TestCase {
 		program = new Program();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update" ) );
 		assertCommandLineHeader( parser );
-		assertEquals( "java.lang.IllegalArgumentException: Source parameter not specified.", parser.next() );
-	}
-
-	public void testUpdateOutputWithMissingSource() throws Exception {
-		program = new Program();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "-source", "invalid.zip", "-target", "target/test/update" ) );
-		assertCommandLineHeader( parser );
-		assertEquals( "java.lang.IllegalArgumentException: Source parameter not found: invalid.zip", parser.next() );
-	}
-
-	public void testUpdateOutputWithInvalidSource() throws Exception {
-		program = new Program();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "-source", "source/test/resources/invalid.zip", "-target", "target/test/update" ) );
-		assertCommandLineHeader( parser );
-		assertEquals( "java.lang.RuntimeException: Source not a valid zip file: source" + File.separator + "test" + File.separator + "resources" + File.separator + "invalid.zip", parser.next() );
+		assertEquals( "java.lang.IllegalArgumentException: No update files specified.", parser.next() );
 	}
 
 	public void testUpdateOutputWithNoTarget() throws Exception {
 		program = new Program();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "-source", "test.zip" ) );
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "--", "test.zip" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "java.lang.IllegalArgumentException: Target parameter not specified.", parser.next() );
 	}
 
+	public void testUpdateOutputWithInvalidSource() throws Exception {
+		program = new Program();
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "--", "source/test/resources/invalid.zip", "target/test/update" ) );
+		assertCommandLineHeader( parser );
+		assertEquals( "java.io.IOException: Source not a valid zip file: source" + File.separator + "test" + File.separator + "resources" + File.separator + "invalid.zip", parser.next() );
+	}
+
 	public void testUpdateOutputWithMissingTarget() throws Exception {
 		program = new Program();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "-source", "source/test/resources/update.zip", "-target", "target/invalid" ) );
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "--", "source/test/resources/invalid.zip", "target/invalid" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "java.lang.IllegalArgumentException: Target parameter not found: target" + File.separator + "invalid", parser.next() );
 	}
 
 	public void testUpdate() throws Exception {
-		Log.setLevel( Log.DEBUG );
+		Log.setLevel( Log.TRACE );
 		program = new Program();
 
-		File source = new File( "source/test/resources/update.zip" );
+		assertEquals( "Old Sample 1", FileUtil.load( sample1 ).trim() );
+		assertFalse( sample2.exists() );
+		assertFalse( folder1.exists() );
+		assertFalse( file1_1.exists() );
+		assertFalse( file1_2.exists() );
+		assertTrue( folder2.exists() );
+		assertFalse( file2_1.exists() );
+		assertEquals( "Old File 2.2", FileUtil.load( file2_2 ).trim() );
 
-		// FIXME Finish implementing update().
-		//program.update( source, target );
+		program.update( new File( "source/test/resources/sample1.zip" ), target );
+
+		assertEquals( "New Sample 1", FileUtil.load( sample1 ).trim() );
+		assertEquals( "New Sample 2", FileUtil.load( sample2 ).trim() );
+		assertTrue( folder1.exists() );
+		assertEquals( "New File 1.1", FileUtil.load( file1_1 ).trim() );
+		assertEquals( "New File 1.2", FileUtil.load( file1_2 ).trim() );
+		assertTrue( folder2.exists() );
+		assertEquals( "New File 2.1", FileUtil.load( file2_1 ).trim() );
+		assertEquals( "New File 2.2", FileUtil.load( file2_2 ).trim() );
+	}
+
+	public void testDoubleUpdate() throws Exception {
+		program = new Program();
+
+		assertEquals( "Old Sample 1", FileUtil.load( sample1 ).trim() );
+		assertFalse( sample2.exists() );
+		assertFalse( folder1.exists() );
+		assertFalse( file1_1.exists() );
+		assertFalse( file1_2.exists() );
+		assertTrue( folder2.exists() );
+		assertFalse( file2_1.exists() );
+		assertEquals( "Old File 2.2", FileUtil.load( file2_2 ).trim() );
+
+		// FIXME Create a sample2.zip with newer context and verify.
+		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-update", "--", "source/test/resources/sample1.zip", "target/test/update", "source/test/resources/sample1.zip", "target/test/update" ) );
+		assertCommandLineHeader( parser );
+
+		assertEquals( "New Sample 1", FileUtil.load( sample1 ).trim() );
+		assertEquals( "New Sample 2", FileUtil.load( sample2 ).trim() );
+		assertTrue( folder1.exists() );
+		assertEquals( "New File 1.1", FileUtil.load( file1_1 ).trim() );
+		assertEquals( "New File 1.2", FileUtil.load( file1_2 ).trim() );
+		assertTrue( folder2.exists() );
+		assertEquals( "New File 2.1", FileUtil.load( file2_1 ).trim() );
+		assertEquals( "New File 2.2", FileUtil.load( file2_2 ).trim() );
 	}
 
 	private String getCommandLineOutput( Program service, Level level, String... commands ) throws Exception {
@@ -162,9 +221,10 @@ public class ProgramTest extends TestCase {
 		assertEquals( "Usage: java -jar <jar file name> [<option>...]", parser.next() );
 		assertEquals( "", parser.next() );
 		assertEquals( "Commands:", parser.next() );
-		assertEquals( "  -update -source <file> -target <path> [-launch command...]", parser.next() );
-		assertEquals( "    Use the specified source file to update the specified target path.", parser.next() );
-		assertEquals( "    If the launch parameter is specified then the launch commands are executed.", parser.next() );
+		assertEquals( "  -update [-launch command...] <file file>...", parser.next() );
+		assertEquals( "    Update files in pairs of two using the first as the source and the second", parser.next() );
+		assertEquals( "    as the target. If the launch parameter is specified then the launch", parser.next() );
+		assertEquals( "    commands are executed after the updates have been processed.", parser.next() );
 		assertEquals( "", parser.next() );
 		assertEquals( "Options:", parser.next() );
 		assertEquals( "  -help            Show help information.", parser.next() );

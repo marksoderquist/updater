@@ -1,7 +1,9 @@
 package com.parallelsymmetry.escape.updater;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
 import java.text.SimpleDateFormat;
@@ -9,6 +11,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
@@ -17,6 +20,8 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import com.parallelsymmetry.escape.utility.Descriptor;
+import com.parallelsymmetry.escape.utility.FileUtil;
+import com.parallelsymmetry.escape.utility.IoUtil;
 import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Parameters;
 import com.parallelsymmetry.escape.utility.Release;
@@ -26,6 +31,8 @@ import com.parallelsymmetry.escape.utility.log.Log;
 
 public final class Program {
 
+	private static final String COPYRIGHT = "(C)";
+
 	private static final String WHAT = "?";
 
 	private static final String HELP = "help";
@@ -34,13 +41,13 @@ public final class Program {
 
 	private static final String UPDATE = "update";
 
-	private static final String SOURCE = "source";
-
-	private static final String TARGET = "target";
-
 	private static final String LAUNCH = "launch";
 
-	private static final String COPYRIGHT = "(C)";
+	private static final String OLD_SUFFIX = ".old";
+
+	private static final String DEL_SUFFIX = ".del";
+
+	private static final String ADD_SUFFIX = ".add";
 
 	private Parameters parameters;
 
@@ -60,6 +67,10 @@ public final class Program {
 
 	public static final void main( String[] commands ) {
 		new Program().call( commands );
+	}
+
+	public Release getRelease() {
+		return release;
 	}
 
 	public void call( String[] commands ) {
@@ -85,24 +96,32 @@ public final class Program {
 			return;
 		}
 
-		try {
-			if( parameters.isSet( UPDATE ) ) {
-				String source = parameters.get( SOURCE );
-				String target = parameters.get( TARGET );
-				if( source == null ) throw new IllegalArgumentException( "Source parameter not specified." );
-				if( target == null ) throw new IllegalArgumentException( "Target parameter not specified." );
-				update( new File( source ), new File( target ) );
-			} else {
-				printHelp();
-				return;
-			}
-		} catch( Throwable throwable ) {
-			Log.write( throwable );
-		}
-	}
+		if( parameters.isSet( UPDATE ) ) {
+			List<File> files = parameters.getFiles();
 
-	public Release getRelease() {
-		return release;
+			try {
+				int index = 0;
+				int count = files.size();
+
+				if( count == 0 ) throw new IllegalArgumentException( "No update files specified." );
+
+				while( index < count ) {
+					File source = null;
+					File target = null;
+					if( index < count ) source = files.get( index );
+					if( index + 1 < count ) target = files.get( index + 1 );
+					if( source == null ) throw new IllegalArgumentException( "Source parameter not specified." );
+					if( target == null ) throw new IllegalArgumentException( "Target parameter not specified." );
+					update( source, target );
+					index += 2;
+				}
+			} catch( Throwable throwable ) {
+				Log.write( throwable );
+			}
+		} else {
+			printHelp();
+			return;
+		}
 	}
 
 	public void update( File source, File target ) throws IOException {
@@ -113,45 +132,89 @@ public final class Program {
 		try {
 			zip = new ZipFile( source );
 		} catch( ZipException exception ) {
-			throw new RuntimeException( "Source not a valid zip file: " + source );
+			throw new IOException( "Source not a valid zip file: " + source );
 		}
 
 		try {
 			stage( zip, target );
 		} catch( Throwable throwable ) {
 			revert( target );
+			throw new IOException( throwable );
 		}
 
 		commit( target );
+		Log.write( "Processed: " + source );
 	}
 
-	private void stage( ZipFile source, File target ) {
-		Log.write( Log.DEBUG, "Staging: " + source + " to " + target + "..." );
+	private void stage( ZipFile source, File target ) throws IOException {
+		Log.write( Log.DEBUG, "Staging: " + source.getName() + " to " + target + "..." );
 
 		// Go through each resource in the update file and move any existing resource to a stage name.
 		Enumeration<? extends ZipEntry> entries = source.entries();
 		while( entries.hasMoreElements() ) {
 			ZipEntry entry = entries.nextElement();
-
+			if( !stage( source.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: " + new File( target, entry.getName() ) );
 		}
 
-		Log.write( Log.TRACE, "Staged: " + source + " to " + target );
+		Log.write( Log.TRACE, "Staged: " + source.getName() + " to " + target );
+	}
+
+	private boolean stage( InputStream input, File target, String entry ) throws IOException {
+		File file = new File( target, entry );
+		boolean folder = entry.endsWith( "/" );
+
+		if( folder ) {
+			if( !file.exists() && !file.mkdirs() ) throw new IOException( "Could not create folder: " + file );
+		} else {
+			if( file.exists() ) {
+				File stageFile = new File( file.getAbsolutePath() + DEL_SUFFIX );
+				if( !file.renameTo( stageFile ) ) throw new IOException( "Could not remname file: " + file );
+			}
+			IoUtil.copy( input, new FileOutputStream( new File( file.getAbsolutePath() + ADD_SUFFIX ) ) );
+		}
+
+		return true;
 	}
 
 	private void commit( File target ) {
 		Log.write( Log.DEBUG, "Committing: " + target + "..." );
 
 		// Commit staged changes to their original state.
+		if( target.isDirectory() ) {
+			File[] files = target.listFiles();
+			for( File file : files ) {
+				commit( file );
+			}
+		} else {
+			if( target.getName().endsWith( ADD_SUFFIX ) ) {
+				target.renameTo( FileUtil.removeExtension( target ) );
+			} else if( target.getName().endsWith( DEL_SUFFIX ) ) {
+				//target.renameTo( new File( FileUtil.removeExtension( target ) + OLD_SUFFIX ) );
+				target.delete();
+			}
+		}
 
 		Log.write( Log.TRACE, "Committed: " + target );
 	}
 
 	private void revert( File target ) {
-		Log.write( "Reverting: " + target + "..." );
+		Log.write( Log.DEBUG, "Reverting: " + target + "..." );
 
 		// Revert staged changes to their original state.
+		if( target.isDirectory() ) {
+			File[] files = target.listFiles();
+			for( File file : files ) {
+				revert( file );
+			}
+		} else {
+			if( target.getName().endsWith( DEL_SUFFIX ) ) {
+				target.renameTo( FileUtil.removeExtension( target ) );
+			} else if( target.getName().endsWith( ADD_SUFFIX ) ) {
+				target.delete();
+			}
+		}
 
-		Log.write( "Reverted: " + target );
+		Log.write( Log.TRACE, "Reverted: " + target );
 	}
 
 	private void describe() {
@@ -203,9 +266,10 @@ public final class Program {
 		Log.write( "Usage: java -jar <jar file name> [<option>...]" );
 		Log.write();
 		Log.write( "Commands:" );
-		Log.write( "  -update -source <file> -target <path> [-launch command...]" );
-		Log.write( "    Use the specified source file to update the specified target path." );
-		Log.write( "    If the launch parameter is specified then the launch commands are executed." );
+		Log.write( "  -update [-launch command...] <file file>..." );
+		Log.write( "    Update files in pairs of two using the first as the source and the second" );
+		Log.write( "    as the target. If the launch parameter is specified then the launch" );
+		Log.write( "    commands are executed after the updates have been processed." );
 		Log.write();
 		Log.write( "Options:" );
 		Log.write( "  -help            Show help information." );
@@ -226,8 +290,6 @@ public final class Program {
 		flags.add( "log.color" );
 
 		flags.add( UPDATE );
-		flags.add( SOURCE );
-		flags.add( TARGET );
 		flags.add( LAUNCH );
 
 		return flags;
