@@ -28,8 +28,14 @@ public class ProgramTest extends TestCase {
 
 	private Program program;
 
+	private File target = new File( "target/test/update" );
+
 	public void setUp() {
 		Log.setLevel( Log.NONE );
+
+		FileUtil.delete( target );
+		new File( "target/test/update" ).mkdirs();
+		assertTrue( target.exists() );
 	}
 
 	public void testCommandLineOutput() throws Exception {
@@ -104,11 +110,6 @@ public class ProgramTest extends TestCase {
 		program = new Program();
 
 		File source = new File( "source/test/resources/update.zip" );
-		File target = new File( "target/test/update" );
-
-		FileUtil.delete( target );
-		target.mkdirs();
-		assertTrue( target.exists() );
 
 		// FIXME Finish implementing update().
 		//program.update( source, target );
