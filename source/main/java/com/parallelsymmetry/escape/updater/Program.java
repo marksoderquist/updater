@@ -83,7 +83,7 @@ public final class Program {
 				return;
 			}
 
-			configureLog( parameters );
+			configureLogging( parameters );
 
 			describe();
 
@@ -317,7 +317,7 @@ public final class Program {
 		return flags;
 	}
 
-	private void configureLog( Parameters parameters ) {
+	private void configureLogging( Parameters parameters ) {
 		Log.setShowColor( parameters.isSet( "log.color" ) );
 		Log.setLevel( Log.parseLevel( parameters.get( "log.level" ) ) );
 	}
