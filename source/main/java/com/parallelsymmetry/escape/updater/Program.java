@@ -22,11 +22,11 @@ import java.util.zip.ZipFile;
 import com.parallelsymmetry.escape.utility.Descriptor;
 import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.IoUtil;
+import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Parameters;
 import com.parallelsymmetry.escape.utility.Release;
 import com.parallelsymmetry.escape.utility.TextUtil;
-import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.Log;
 
 public final class Program {
@@ -244,7 +244,7 @@ public final class Program {
 
 		try {
 			Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
-			Version version = Version.parse( descriptor.getValue( "/program/information/version" ) );
+			Version version = new Version( descriptor.getValue( "/program/information/version" ) );
 			Date date = releaseDateFormat.parse( descriptor.getValue( "/program/information/timestamp" ) );
 			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
 
@@ -274,7 +274,7 @@ public final class Program {
 	}
 
 	private void printVersion() {
-		Log.write( "Version: " + getRelease().getRelease() );
+		Log.write( "Version: " + getRelease().toString() );
 		Log.write( "Java version: " + System.getProperty( "java.version" ) );
 		Log.write( "Java home: " + System.getProperty( "java.home" ) );
 		Log.write( "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );

@@ -16,9 +16,9 @@ import junit.framework.TestCase;
 import com.parallelsymmetry.escape.utility.Descriptor;
 import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.LineParser;
+import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Release;
-import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.DefaultHandler;
 import com.parallelsymmetry.escape.utility.log.Log;
 
@@ -193,7 +193,7 @@ public class ProgramTest extends TestCase {
 		releaseDateFormat.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
 
 		Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
-		Version version = Version.parse( descriptor.getValue( "/program/information/version" ) );
+		Version version = new Version( descriptor.getValue( "/program/information/version" ) );
 		Date date = releaseDateFormat.parse( descriptor.getValue( "/program/information/timestamp" ) );
 
 		Release release = new Release( version, date );
@@ -208,7 +208,7 @@ public class ProgramTest extends TestCase {
 	}
 
 	private void assertCommandLineVersion( LineParser parser ) throws Exception {
-		assertEquals( "Version: " + program.getRelease().getRelease(), parser.next() );
+		assertEquals( "Version: " + program.getRelease().toString(), parser.next() );
 		assertEquals( "Java version: " + System.getProperty( "java.version" ), parser.next() );
 		assertEquals( "Java home: " + System.getProperty( "java.home" ), parser.next() );
 		assertEquals( "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset(), parser.next() );
