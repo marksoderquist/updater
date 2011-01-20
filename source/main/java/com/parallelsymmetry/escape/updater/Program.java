@@ -97,7 +97,7 @@ public final class Program {
 				return;
 			}
 
-			if( parameters.isSet( UPDATE ) ) {
+			if( parameters.isSpecified( UPDATE ) ) {
 				List<String> files = parameters.getValues( UPDATE );
 
 				try {
@@ -119,7 +119,7 @@ public final class Program {
 				} catch( RuntimeException exception ) {
 					Log.write( exception );
 				}
-			} else if( parameters.isSet( LAUNCH ) ) {
+			} else if( parameters.isSpecified( LAUNCH ) ) {
 				try {
 					launch( parameters );
 				} catch( IOException exception ) {
@@ -318,8 +318,10 @@ public final class Program {
 	}
 
 	private void configureLogging( Parameters parameters ) {
-		Log.setShowColor( parameters.isSet( "log.color" ) );
-		Log.setLevel( Log.parseLevel( parameters.get( "log.level" ) ) );
+		if( parameters.isSpecified( "log.level" ) ) Log.setLevel( Log.parseLevel( parameters.get( "log.level" ) ) );
+		if( parameters.isSpecified( "log.tag" ) ) Log.setShowTag( parameters.isSet( "log.tag" ) );
+		if( parameters.isSpecified( "log.color" ) ) Log.setShowColor( parameters.isSet( "log.color" ) );
+		if( parameters.isSpecified( "log.prefix" ) ) Log.setShowPrefix( parameters.isSet( "log.prefix" ) );
 	}
 
 }
