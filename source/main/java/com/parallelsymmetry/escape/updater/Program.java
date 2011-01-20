@@ -244,11 +244,11 @@ public final class Program {
 
 		try {
 			Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
+			name = descriptor.getValue( "/program/information/name" );
+
 			Version version = new Version( descriptor.getValue( "/program/information/version" ) );
 			Date date = releaseDateFormat.parse( descriptor.getValue( "/program/information/timestamp" ) );
 			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
-
-			name = descriptor.getValue( "/program/information/name" );
 			release = new Release( version, date );
 
 			inceptionYear = Integer.parseInt( descriptor.getValue( "/program/information/inception" ) );

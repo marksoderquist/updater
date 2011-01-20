@@ -1,12 +1,12 @@
 <program>
 
 	<information>
-		<namespace>${project.groupId}</namespace>
-		<identifier>${project.artifactId}</identifier>
+		<name>${project.name}</name>
+		<group>${project.groupId}</group>
+		<artifact>${project.artifactId}</artifact>
 		<version>${project.version}</version>
 		<timestamp>${buildNumber}</timestamp>
 
-		<name>${project.name}</name>
 		<inception>${project.inceptionYear}</inception>
 		<organization>${project.organization.name}</organization>
 
