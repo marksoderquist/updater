@@ -287,18 +287,21 @@ public final class Program {
 		Log.write( "Usage: java -jar <jar file name> [<option>...]" );
 		Log.write();
 		Log.write( "Commands:" );
-		Log.write( "  --update <file file>... [--launch command... [-launch.home folder]]" );
+		Log.write( "  --update <file file>..." );
 		Log.write( "    Update files in pairs of two using the first as the source and the second" );
 		Log.write( "    as the target. If the launch parameter is specified then the launch" );
 		Log.write( "    commands are executed after the updates have been processed." );
+		Log.write( "  --launch command... [-launch.home folder]" );
 		Log.write();
 		Log.write( "Options:" );
 		Log.write( "  -help            Show help information." );
 		Log.write( "  -version         Show version and copyright information only." );
 		Log.write();
-		Log.write( "  -log.color           Use ANSI color in the console output." );
 		Log.write( "  -log.level <level>   Change the output log level. Levels are:" );
 		Log.write( "                       none, error, warn, info, trace, debug, all" );
+		Log.write( "  -log.tag             Use level tags in the console output." );
+		Log.write( "  -log.color           Use level colors in the console output." );
+		Log.write( "  -log.prefix          Use level prefixes in the console output." );
 	}
 
 	private Set<String> getValidCommandLineFlags() {
@@ -308,7 +311,9 @@ public final class Program {
 		flags.add( HELP );
 		flags.add( VERSION );
 		flags.add( "log.level" );
+		flags.add( "log.tag" );
 		flags.add( "log.color" );
+		flags.add( "log.prefix" );
 
 		flags.add( UPDATE );
 		flags.add( LAUNCH );

@@ -220,18 +220,21 @@ public class ProgramTest extends TestCase {
 		assertEquals( "Usage: java -jar <jar file name> [<option>...]", parser.next() );
 		assertEquals( "", parser.next() );
 		assertEquals( "Commands:", parser.next() );
-		assertEquals( "  --update <file file>... [--launch command... [-launch.home folder]]", parser.next() );
+		assertEquals( "  --update <file file>...", parser.next() );
 		assertEquals( "    Update files in pairs of two using the first as the source and the second", parser.next() );
 		assertEquals( "    as the target. If the launch parameter is specified then the launch", parser.next() );
 		assertEquals( "    commands are executed after the updates have been processed.", parser.next() );
+		assertEquals( "  --launch command... [-launch.home folder]", parser.next() );
 		assertEquals( "", parser.next() );
 		assertEquals( "Options:", parser.next() );
 		assertEquals( "  -help            Show help information.", parser.next() );
 		assertEquals( "  -version         Show version and copyright information only.", parser.next() );
 		assertEquals( "", parser.next() );
-		assertEquals( "  -log.color           Use ANSI color in the console output.", parser.next() );
 		assertEquals( "  -log.level <level>   Change the output log level. Levels are:", parser.next() );
 		assertEquals( "                       none, error, warn, info, trace, debug, all", parser.next() );
+		assertEquals( "  -log.tag             Use level tags in the console output.", parser.next() );
+		assertEquals( "  -log.color           Use level colors in the console output.", parser.next() );
+		assertEquals( "  -log.prefix          Use level prefixes in the console output.", parser.next() );
 		assertEquals( "", parser.next() );
 	}
 
