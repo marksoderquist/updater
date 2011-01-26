@@ -89,15 +89,15 @@ public final class Program {
 
 			printHeader();
 
-			if( parameters.isSet( WHAT ) || parameters.isSet( HELP ) ) {
+			if( parameters.isTrue( WHAT ) || parameters.isTrue( HELP ) ) {
 				printHelp();
 				return;
-			} else if( parameters.isSet( VERSION ) ) {
+			} else if( parameters.isTrue( VERSION ) ) {
 				printVersion();
 				return;
 			}
 
-			if( parameters.isSpecified( UPDATE ) ) {
+			if( parameters.isSet( UPDATE ) ) {
 				List<String> files = parameters.getValues( UPDATE );
 
 				try {
@@ -119,7 +119,7 @@ public final class Program {
 				} catch( RuntimeException exception ) {
 					Log.write( exception );
 				}
-			} else if( parameters.isSpecified( LAUNCH ) ) {
+			} else if( parameters.isSet( LAUNCH ) ) {
 				try {
 					launch( parameters );
 				} catch( IOException exception ) {
