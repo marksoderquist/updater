@@ -235,6 +235,7 @@ public class ProgramTest extends TestCase {
 		assertEquals( "  -log.tag             Use level tags in the console output.", parser.next() );
 		assertEquals( "  -log.color           Use level colors in the console output.", parser.next() );
 		assertEquals( "  -log.prefix          Use level prefixes in the console output.", parser.next() );
+		assertEquals( "  -log.file <file>     Output log messages to the specified file.", parser.next() );
 		assertEquals( "", parser.next() );
 	}
 

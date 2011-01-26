@@ -83,7 +83,7 @@ public final class Program {
 				return;
 			}
 
-			configureLogging( parameters );
+			Log.init( parameters );
 
 			describe();
 
@@ -302,6 +302,7 @@ public final class Program {
 		Log.write( "  -log.tag             Use level tags in the console output." );
 		Log.write( "  -log.color           Use level colors in the console output." );
 		Log.write( "  -log.prefix          Use level prefixes in the console output." );
+		Log.write( "  -log.file <file>     Output log messages to the specified file." );
 	}
 
 	private Set<String> getValidCommandLineFlags() {
@@ -314,19 +315,13 @@ public final class Program {
 		flags.add( "log.tag" );
 		flags.add( "log.color" );
 		flags.add( "log.prefix" );
+		flags.add( "log.file" );
 
 		flags.add( UPDATE );
 		flags.add( LAUNCH );
 		flags.add( LAUNCH_HOME );
 
 		return flags;
-	}
-
-	private void configureLogging( Parameters parameters ) {
-		if( parameters.isSpecified( "log.level" ) ) Log.setLevel( Log.parseLevel( parameters.get( "log.level" ) ) );
-		if( parameters.isSpecified( "log.tag" ) ) Log.setShowTag( parameters.isSet( "log.tag" ) );
-		if( parameters.isSpecified( "log.color" ) ) Log.setShowColor( parameters.isSet( "log.color" ) );
-		if( parameters.isSpecified( "log.prefix" ) ) Log.setShowPrefix( parameters.isSet( "log.prefix" ) );
 	}
 
 }
