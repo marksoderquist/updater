@@ -64,9 +64,9 @@ public final class Program {
 	private String copyrightHolder;
 
 	private String licenseSummary;
-
-	public static final void main( String[] commands ) {
-		new Program().call( commands );
+	
+	public Program() {
+		describe();
 	}
 
 	public Release getRelease() {
@@ -156,6 +156,52 @@ public final class Program {
 		Log.write( "Processed: " + source );
 	}
 
+	public static final void main( String[] commands ) {
+		new Program().call( commands );
+	}
+
+	private void describe() {
+		SimpleDateFormat releaseDateFormat = new SimpleDateFormat( Release.DATE_FORMAT );
+		releaseDateFormat.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
+	
+		try {
+			Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
+			name = descriptor.getValue( "/program/information/name" );
+	
+			Version version = new Version( descriptor.getValue( "/program/information/version" ) );
+			Date date = releaseDateFormat.parse( descriptor.getValue( "/program/information/timestamp" ) );
+			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
+			release = new Release( version, date );
+	
+			inceptionYear = Integer.parseInt( descriptor.getValue( "/program/information/inception" ) );
+			copyrightHolder = descriptor.getValue( "/program/information/organization" );
+			copyrightNotice = descriptor.getValue( "/program/information/copyright/notice" );
+			copyright = COPYRIGHT + " " + ( currentYear == inceptionYear ? currentYear : inceptionYear + "-" + currentYear ) + " " + copyrightHolder;
+			licenseSummary = TextUtil.reline( descriptor.getValue( "/program/information/license/summary" ), 79 );
+		} catch( Exception exception ) {
+			throw new RuntimeException( exception );
+		}
+	}
+
+	private Set<String> getValidCommandLineFlags() {
+		Set<String> flags = new HashSet<String>();
+	
+		flags.add( WHAT );
+		flags.add( HELP );
+		flags.add( VERSION );
+		flags.add( "log.level" );
+		flags.add( "log.tag" );
+		flags.add( "log.color" );
+		flags.add( "log.prefix" );
+		flags.add( "log.file" );
+	
+		flags.add( UPDATE );
+		flags.add( LAUNCH );
+		flags.add( LAUNCH_HOME );
+	
+		return flags;
+	}
+
 	private void stage( ZipFile source, File target ) throws IOException {
 		Log.write( Log.DEBUG, "Staging: " + source.getName() + " to " + target + "..." );
 
@@ -238,29 +284,6 @@ public final class Program {
 		}
 	}
 
-	private void describe() {
-		SimpleDateFormat releaseDateFormat = new SimpleDateFormat( Release.DATE_FORMAT );
-		releaseDateFormat.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
-
-		try {
-			Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
-			name = descriptor.getValue( "/program/information/name" );
-
-			Version version = new Version( descriptor.getValue( "/program/information/version" ) );
-			Date date = releaseDateFormat.parse( descriptor.getValue( "/program/information/timestamp" ) );
-			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
-			release = new Release( version, date );
-
-			inceptionYear = Integer.parseInt( descriptor.getValue( "/program/information/inception" ) );
-			copyrightHolder = descriptor.getValue( "/program/information/organization" );
-			copyrightNotice = descriptor.getValue( "/program/information/copyright/notice" );
-			copyright = COPYRIGHT + " " + ( currentYear == inceptionYear ? currentYear : inceptionYear + "-" + currentYear ) + " " + copyrightHolder;
-			licenseSummary = TextUtil.reline( descriptor.getValue( "/program/information/license/summary" ), 79 );
-		} catch( Exception exception ) {
-			throw new RuntimeException( exception );
-		}
-	}
-
 	private void printHeader() {
 		Log.write( Log.NONE, name + " " + release.getVersion().toHumanString() );
 		Log.write( Log.NONE, copyright + " " + copyrightNotice );
@@ -303,25 +326,6 @@ public final class Program {
 		Log.write( "  -log.color           Use level colors in the console output." );
 		Log.write( "  -log.prefix          Use level prefixes in the console output." );
 		Log.write( "  -log.file <file>     Output log messages to the specified file." );
-	}
-
-	private Set<String> getValidCommandLineFlags() {
-		Set<String> flags = new HashSet<String>();
-
-		flags.add( WHAT );
-		flags.add( HELP );
-		flags.add( VERSION );
-		flags.add( "log.level" );
-		flags.add( "log.tag" );
-		flags.add( "log.color" );
-		flags.add( "log.prefix" );
-		flags.add( "log.file" );
-
-		flags.add( UPDATE );
-		flags.add( LAUNCH );
-		flags.add( LAUNCH_HOME );
-
-		return flags;
 	}
 
 }
