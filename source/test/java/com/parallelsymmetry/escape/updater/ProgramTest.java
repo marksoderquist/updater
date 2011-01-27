@@ -109,28 +109,28 @@ public class ProgramTest extends TestCase {
 		program = new Program();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update" ) );
 		assertCommandLineHeader( parser );
-		assertEquals( "java.lang.IllegalArgumentException: No update files specified.", parser.next() );
+		assertEquals( "[E] java.lang.IllegalArgumentException: No update files specified.", parser.next() );
 	}
 
 	public void testUpdateOutputWithNoTarget() throws Exception {
 		program = new Program();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "test.zip" ) );
 		assertCommandLineHeader( parser );
-		assertEquals( "java.lang.IllegalArgumentException: Target parameter not specified.", parser.next() );
+		assertEquals( "[E] java.lang.IllegalArgumentException: Target parameter not specified.", parser.next() );
 	}
 
 	public void testUpdateOutputWithInvalidSource() throws Exception {
 		program = new Program();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
-		assertEquals( "java.io.IOException: Source not a valid zip file: source" + File.separator + "test" + File.separator + "resources" + File.separator + "invalid.zip", parser.next() );
+		assertEquals( "[E] java.io.IOException: Source not a valid zip file: source" + File.separator + "test" + File.separator + "resources" + File.separator + "invalid.zip", parser.next() );
 	}
 
 	public void testUpdateOutputWithMissingTarget() throws Exception {
 		program = new Program();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/invalid" ) );
 		assertCommandLineHeader( parser );
-		assertEquals( "java.lang.IllegalArgumentException: Target parameter not found: target" + File.separator + "invalid", parser.next() );
+		assertEquals( "[E] java.lang.IllegalArgumentException: Target parameter not found: target" + File.separator + "invalid", parser.next() );
 	}
 
 	public void testUpdate() throws Exception {

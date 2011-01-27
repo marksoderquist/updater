@@ -64,7 +64,7 @@ public final class Program {
 	private String copyrightHolder;
 
 	private String licenseSummary;
-	
+
 	public Program() {
 		describe();
 	}
@@ -163,16 +163,16 @@ public final class Program {
 	private void describe() {
 		SimpleDateFormat releaseDateFormat = new SimpleDateFormat( Release.DATE_FORMAT );
 		releaseDateFormat.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
-	
+
 		try {
 			Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
 			name = descriptor.getValue( "/program/information/name" );
-	
+
 			Version version = new Version( descriptor.getValue( "/program/information/version" ) );
 			Date date = releaseDateFormat.parse( descriptor.getValue( "/program/information/timestamp" ) );
 			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
 			release = new Release( version, date );
-	
+
 			inceptionYear = Integer.parseInt( descriptor.getValue( "/program/information/inception" ) );
 			copyrightHolder = descriptor.getValue( "/program/information/organization" );
 			copyrightNotice = descriptor.getValue( "/program/information/copyright/notice" );
@@ -185,7 +185,7 @@ public final class Program {
 
 	private Set<String> getValidCommandLineFlags() {
 		Set<String> flags = new HashSet<String>();
-	
+
 		flags.add( WHAT );
 		flags.add( HELP );
 		flags.add( VERSION );
@@ -194,11 +194,11 @@ public final class Program {
 		flags.add( "log.color" );
 		flags.add( "log.prefix" );
 		flags.add( "log.file" );
-	
+
 		flags.add( UPDATE );
 		flags.add( LAUNCH );
 		flags.add( LAUNCH_HOME );
-	
+
 		return flags;
 	}
 
@@ -297,35 +297,35 @@ public final class Program {
 	}
 
 	private void printVersion() {
-		Log.write( "Version: " + getRelease().toString() );
-		Log.write( "Java version: " + System.getProperty( "java.version" ) );
-		Log.write( "Java home: " + System.getProperty( "java.home" ) );
-		Log.write( "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
-		Log.write( "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
+		Log.write( Log.NONE, "Version: " + getRelease().toString() );
+		Log.write( Log.NONE, "Java version: " + System.getProperty( "java.version" ) );
+		Log.write( Log.NONE, "Java home: " + System.getProperty( "java.home" ) );
+		Log.write( Log.NONE, "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
+		Log.write( Log.NONE, "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
 	}
 
 	private void printHelp() {
 		// ---------0--------1---------2---------3---------4---------5---------6---------7---------8
 		// ---------12345678901234567890123456789012345678901234567890123456789012345678901234567890
-		Log.write( "Usage: java -jar <jar file name> [<option>...]" );
-		Log.write();
-		Log.write( "Commands:" );
-		Log.write( "  --update <file file>..." );
-		Log.write( "    Update files in pairs of two using the first as the source and the second" );
-		Log.write( "    as the target. If the launch parameter is specified then the launch" );
-		Log.write( "    commands are executed after the updates have been processed." );
-		Log.write( "  --launch command... [-launch.home folder]" );
-		Log.write();
-		Log.write( "Options:" );
-		Log.write( "  -help            Show help information." );
-		Log.write( "  -version         Show version and copyright information only." );
-		Log.write();
-		Log.write( "  -log.level <level>   Change the output log level. Levels are:" );
-		Log.write( "                       none, error, warn, info, trace, debug, all" );
-		Log.write( "  -log.tag             Use level tags in the console output." );
-		Log.write( "  -log.color           Use level colors in the console output." );
-		Log.write( "  -log.prefix          Use level prefixes in the console output." );
-		Log.write( "  -log.file <file>     Output log messages to the specified file." );
+		Log.write( Log.NONE, "Usage: java -jar <jar file name> [<option>...]" );
+		Log.write( Log.NONE );
+		Log.write( Log.NONE, "Commands:" );
+		Log.write( Log.NONE, "  --update <file file>..." );
+		Log.write( Log.NONE, "    Update files in pairs of two using the first as the source and the second" );
+		Log.write( Log.NONE, "    as the target. If the launch parameter is specified then the launch" );
+		Log.write( Log.NONE, "    commands are executed after the updates have been processed." );
+		Log.write( Log.NONE, "  --launch command... [-launch.home folder]" );
+		Log.write( Log.NONE );
+		Log.write( Log.NONE, "Options:" );
+		Log.write( Log.NONE, "  -help            Show help information." );
+		Log.write( Log.NONE, "  -version         Show version and copyright information only." );
+		Log.write( Log.NONE );
+		Log.write( Log.NONE, "  -log.level <level>   Change the output log level. Levels are:" );
+		Log.write( Log.NONE, "                       none, error, warn, info, trace, debug, all" );
+		Log.write( Log.NONE, "  -log.tag             Use level tags in the console output." );
+		Log.write( Log.NONE, "  -log.color           Use level colors in the console output." );
+		Log.write( Log.NONE, "  -log.prefix          Use level prefixes in the console output." );
+		Log.write( Log.NONE, "  -log.file <file>     Output log messages to the specified file." );
 	}
 
 }
