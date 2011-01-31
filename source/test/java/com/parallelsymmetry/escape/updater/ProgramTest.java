@@ -123,17 +123,23 @@ public class ProgramTest extends TestCase {
 		program = new Program();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
-		assertEquals( "[E] java.io.IOException: Source not a valid zip file: source" + File.separator + "test" + File.separator + "resources" + File.separator + "invalid.zip", parser.next() );
+
+		String line = parser.next();
+		assertTrue( line.startsWith( "[E] java.io.IOException: Source not a valid zip file: " ) );
+		assertTrue( line.endsWith( "source" + File.separator + "test" + File.separator + "resources" + File.separator + "invalid.zip" ) );
 	}
 
 	public void testUpdateOutputWithMissingTarget() throws Exception {
 		program = new Program();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/invalid" ) );
 		assertCommandLineHeader( parser );
-		assertEquals( "[E] java.lang.IllegalArgumentException: Target parameter not found: target" + File.separator + "invalid", parser.next() );
+
+		String line = parser.next();
+		assertTrue( line.startsWith( "[E] java.lang.IllegalArgumentException: Target parameter not found: " ) );
+		assertTrue( line.endsWith( "target" + File.separator + "invalid" ) );
 	}
 
-	public void testUpdate() throws Exception {
+	public void testUpdate() throws Throwable {
 		program = new Program();
 
 		program.update( update1, target );
@@ -236,6 +242,7 @@ public class ProgramTest extends TestCase {
 		assertEquals( "  -log.color           Use level colors in the console output.", parser.next() );
 		assertEquals( "  -log.prefix          Use level prefixes in the console output.", parser.next() );
 		assertEquals( "  -log.file <file>     Output log messages to the specified file.", parser.next() );
+		assertEquals( "  -log.append          Append to the log file if file is used.", parser.next() );
 		assertEquals( "", parser.next() );
 	}
 

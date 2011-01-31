@@ -10,10 +10,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -22,11 +20,11 @@ import java.util.zip.ZipFile;
 import com.parallelsymmetry.escape.utility.Descriptor;
 import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.IoUtil;
-import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Parameters;
 import com.parallelsymmetry.escape.utility.Release;
 import com.parallelsymmetry.escape.utility.TextUtil;
+import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.Log;
 
 public final class Program {
@@ -76,7 +74,7 @@ public final class Program {
 	public void call( String[] commands ) {
 		try {
 			try {
-				parameters = Parameters.parse( commands, getValidCommandLineFlags() );
+				parameters = Parameters.parse( commands );
 			} catch( InvalidParameterException exception ) {
 				Log.write( Log.ERROR, exception.getMessage() );
 				printHelp();
@@ -113,13 +111,15 @@ public final class Program {
 						if( index + 1 < count ) target = files.get( index + 1 );
 						if( source == null ) throw new IllegalArgumentException( "Source parameter not specified." );
 						if( target == null ) throw new IllegalArgumentException( "Target parameter not specified." );
-						update( new File( source ), new File( target ) );
+						update( new File( source ).getCanonicalFile(), new File( target ).getCanonicalFile() );
 						index += 2;
 					}
 				} catch( RuntimeException exception ) {
 					Log.write( exception );
 				}
-			} else if( parameters.isSet( LAUNCH ) ) {
+			}
+
+			if( parameters.isSet( LAUNCH ) ) {
 				try {
 					launch( parameters );
 				} catch( IOException exception ) {
@@ -134,26 +134,28 @@ public final class Program {
 		}
 	}
 
-	public void update( File source, File target ) throws IOException {
+	public void update( File source, File target ) throws Throwable {
 		if( !source.exists() ) throw new IllegalArgumentException( "Source parameter not found: " + source );
 		if( !target.exists() ) throw new IllegalArgumentException( "Target parameter not found: " + target );
 
-		ZipFile zip;
+		if( !target.isDirectory() ) throw new IOException( "Target must be a folder: " + target );
+
 		try {
-			zip = new ZipFile( source );
+			stage( source, target );
 		} catch( ZipException exception ) {
 			throw new IOException( "Source not a valid zip file: " + source );
-		}
-
-		try {
-			stage( zip, target );
 		} catch( Throwable throwable ) {
-			revert( target );
-			throw new IOException( throwable );
+			Log.write( Log.WARN, "Reverting: " + target );
+			revert( target, target );
+			throw throwable;
 		}
 
-		commit( target );
-		Log.write( "Processed: " + source );
+		Log.write( Log.TRACE, "Committing: " + target );
+		commit( target, target );
+
+		source.renameTo( new File( source.getAbsolutePath() + ".old" ) );
+
+		Log.write( "Success: " + source );
 	}
 
 	public static final void main( String[] commands ) {
@@ -183,32 +185,15 @@ public final class Program {
 		}
 	}
 
-	private Set<String> getValidCommandLineFlags() {
-		Set<String> flags = new HashSet<String>();
-
-		flags.add( WHAT );
-		flags.add( HELP );
-		flags.add( VERSION );
-		flags.add( "log.level" );
-		flags.add( "log.tag" );
-		flags.add( "log.color" );
-		flags.add( "log.prefix" );
-		flags.add( "log.file" );
-
-		flags.add( UPDATE );
-		flags.add( LAUNCH );
-		flags.add( LAUNCH_HOME );
-
-		return flags;
-	}
-
-	private void stage( ZipFile source, File target ) throws IOException {
+	private void stage( File source, File target ) throws IOException {
 		Log.write( Log.DEBUG, "Staging: " + source.getName() + " to " + target + "..." );
 
-		Enumeration<? extends ZipEntry> entries = source.entries();
+		ZipFile zip = new ZipFile( source );
+
+		Enumeration<? extends ZipEntry> entries = zip.entries();
 		while( entries.hasMoreElements() ) {
 			ZipEntry entry = entries.nextElement();
-			if( !stage( source.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: " + new File( target, entry.getName() ) );
+			if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: " + new File( target, entry.getName() ) );
 		}
 
 		Log.write( Log.TRACE, "Staged: " + source.getName() + " to " + target );
@@ -236,31 +221,37 @@ public final class Program {
 			}
 		}
 
+		Log.write( Log.DEBUG, "Staging: " + entry );
+
 		return true;
 	}
 
-	private void commit( File target ) {
+	private void commit( File root, File target ) {
 		// Commit staged changes to their original state.
 		if( target.isDirectory() ) {
 			File[] files = target.listFiles();
 			for( File file : files ) {
-				commit( file );
+				commit( root, file );
 			}
 		} else {
 			if( target.getName().endsWith( ADD_SUFFIX ) ) {
-				target.renameTo( FileUtil.removeExtension( target ) );
+				File file = FileUtil.removeExtension( target );
+				target.renameTo( file );
+				Log.write( Log.TRACE, "Commit: " + relativize( root, file ) );
 			} else if( target.getName().endsWith( DEL_SUFFIX ) ) {
+				File file = FileUtil.removeExtension( target );
 				target.delete();
+				if( !file.exists() ) Log.write( Log.TRACE, "Remove: " + relativize( root, FileUtil.removeExtension( target ) ) );
 			}
 		}
 	}
 
-	private void revert( File target ) {
+	private void revert( File root, File target ) {
 		// Revert staged changes to their original state.
 		if( target.isDirectory() ) {
 			File[] files = target.listFiles();
 			for( File file : files ) {
-				revert( file );
+				revert( root, file );
 			}
 		} else {
 			if( target.getName().endsWith( DEL_SUFFIX ) ) {
@@ -271,17 +262,21 @@ public final class Program {
 		}
 	}
 
+	private String relativize( File root, File file ) {
+		return root.toURI().relativize( file.toURI() ).toString();
+	}
+
 	private void launch( Parameters parameters ) throws IOException {
 		List<String> values = parameters.getValues( LAUNCH );
-		String[] commands = values.toArray( new String[values.size()] );
-
 		String workFolder = parameters.get( LAUNCH_HOME );
 
-		if( workFolder == null ) {
-			Runtime.getRuntime().exec( commands );
-		} else {
-			Runtime.getRuntime().exec( commands, null, new File( workFolder ) );
-		}
+		ProcessBuilder builder = new ProcessBuilder( values );
+		if( workFolder != null ) builder.directory( new File( workFolder ) );
+
+		Log.write( Log.DEBUG, "Launching: " + TextUtil.toString( builder.command(), " " ) );
+
+		builder.start();
+		Log.write( Log.TRACE, "Program process started." );
 	}
 
 	private void printHeader() {
@@ -326,6 +321,7 @@ public final class Program {
 		Log.write( Log.NONE, "  -log.color           Use level colors in the console output." );
 		Log.write( Log.NONE, "  -log.prefix          Use level prefixes in the console output." );
 		Log.write( Log.NONE, "  -log.file <file>     Output log messages to the specified file." );
+		Log.write( Log.NONE, "  -log.append          Append to the log file if file is used." );
 	}
 
 }
