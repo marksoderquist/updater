@@ -153,7 +153,7 @@ public final class Program {
 		Log.write( Log.TRACE, "Committing: " + target );
 		commit( target, target );
 
-		source.renameTo( new File( source.getAbsolutePath() + ".old" ) );
+		//source.renameTo( new File( source.getAbsolutePath() + ".old" ) );
 
 		Log.write( "Success: " + source );
 	}
