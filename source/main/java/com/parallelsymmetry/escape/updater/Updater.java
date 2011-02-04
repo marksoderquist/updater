@@ -27,7 +27,7 @@ import com.parallelsymmetry.escape.utility.TextUtil;
 import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.Log;
 
-public final class Program {
+public final class Updater {
 
 	private static final String COPYRIGHT = "(C)";
 
@@ -63,7 +63,7 @@ public final class Program {
 
 	private String licenseSummary;
 
-	public Program() {
+	public Updater() {
 		describe();
 	}
 
@@ -159,7 +159,7 @@ public final class Program {
 	}
 
 	public static final void main( String[] commands ) {
-		new Program().call( commands );
+		new Updater().call( commands );
 	}
 
 	private void describe() {
@@ -276,7 +276,7 @@ public final class Program {
 		Log.write( Log.DEBUG, "Launching: " + TextUtil.toString( builder.command(), " " ) );
 
 		builder.start();
-		Log.write( Log.TRACE, "Program process started." );
+		Log.write( Log.TRACE, "Updater process started." );
 	}
 
 	private void printHeader() {

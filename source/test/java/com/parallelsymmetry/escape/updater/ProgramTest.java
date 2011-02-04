@@ -26,7 +26,7 @@ public class ProgramTest extends TestCase {
 
 	private static final String RELEASE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-	private Program program;
+	private Updater program;
 
 	private File source = new File( "source/test/resources" );
 
@@ -74,7 +74,7 @@ public class ProgramTest extends TestCase {
 	}
 
 	public void testCommandLineOutput() throws Exception {
-		program = new Program();
+		program = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineHelp( parser );
@@ -82,7 +82,7 @@ public class ProgramTest extends TestCase {
 	}
 
 	public void testVersionOutput() throws Exception {
-		program = new Program();
+		program = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-version" ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineVersion( parser );
@@ -90,7 +90,7 @@ public class ProgramTest extends TestCase {
 	}
 
 	public void testQuestionOutput() throws Exception {
-		program = new Program();
+		program = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-?" ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineHelp( parser );
@@ -98,7 +98,7 @@ public class ProgramTest extends TestCase {
 	}
 
 	public void testHelpOutput() throws Exception {
-		program = new Program();
+		program = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-help" ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineHelp( parser );
@@ -106,21 +106,21 @@ public class ProgramTest extends TestCase {
 	}
 
 	public void testUpdateOutputWithNoSource() throws Exception {
-		program = new Program();
+		program = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "[E] java.lang.IllegalArgumentException: No update files specified.", parser.next() );
 	}
 
 	public void testUpdateOutputWithNoTarget() throws Exception {
-		program = new Program();
+		program = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "test.zip" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "[E] java.lang.IllegalArgumentException: Target parameter not specified.", parser.next() );
 	}
 
 	public void testUpdateOutputWithInvalidSource() throws Exception {
-		program = new Program();
+		program = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
 
@@ -130,7 +130,7 @@ public class ProgramTest extends TestCase {
 	}
 
 	public void testUpdateOutputWithMissingTarget() throws Exception {
-		program = new Program();
+		program = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/invalid" ) );
 		assertCommandLineHeader( parser );
 
@@ -140,7 +140,7 @@ public class ProgramTest extends TestCase {
 	}
 
 	public void testUpdate() throws Throwable {
-		program = new Program();
+		program = new Updater();
 
 		program.update( update1, target );
 		assertEquals( "Sample 1 Version 1", FileUtil.load( sample1 ).trim() );
@@ -164,7 +164,7 @@ public class ProgramTest extends TestCase {
 	}
 
 	public void testSimultaneousUpdate() throws Exception {
-		program = new Program();
+		program = new Updater();
 
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/update1.zip", "target/test/update", "source/test/resources/update2.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
@@ -179,7 +179,7 @@ public class ProgramTest extends TestCase {
 		assertEquals( "File 2.2 Version 2", FileUtil.load( file2_2 ).trim() );
 	}
 
-	private String getCommandLineOutput( Program service, Level level, String... commands ) throws Exception {
+	private String getCommandLineOutput( Updater service, Level level, String... commands ) throws Exception {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		DefaultHandler handler = new DefaultHandler( new PrintStream( buffer ) );
 		handler.setLevel( level );
