@@ -5,7 +5,7 @@
 		<group>${project.groupId}</group>
 		<artifact>${project.artifactId}</artifact>
 		<version>${project.version}</version>
-		<timestamp>${buildNumber}</timestamp>
+		<timestamp>${timestamp}</timestamp>
 
 		<inception>${project.inceptionYear}</inception>
 		<organization>${project.organization.name}</organization>

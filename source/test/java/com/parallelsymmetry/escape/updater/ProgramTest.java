@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -16,9 +15,9 @@ import junit.framework.TestCase;
 import com.parallelsymmetry.escape.utility.Descriptor;
 import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.LineParser;
-import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Release;
+import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.DefaultHandler;
 import com.parallelsymmetry.escape.utility.log.Log;
 
@@ -195,12 +194,9 @@ public class ProgramTest extends TestCase {
 	}
 
 	private void assertCommandLineHeader( LineParser parser ) throws Exception {
-		SimpleDateFormat releaseDateFormat = new SimpleDateFormat( RELEASE_DATE_FORMAT );
-		releaseDateFormat.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
-
 		Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
 		Version version = new Version( descriptor.getValue( "/program/information/version" ) );
-		Date date = releaseDateFormat.parse( descriptor.getValue( "/program/information/timestamp" ) );
+		Date date = new Date( Long.parseLong( descriptor.getValue( "/program/information/timestamp" ) ) );
 
 		Release release = new Release( version, date );
 		int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );

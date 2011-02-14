@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
@@ -163,15 +162,12 @@ public final class Updater {
 	}
 
 	private void describe() {
-		SimpleDateFormat releaseDateFormat = new SimpleDateFormat( Release.DATE_FORMAT );
-		releaseDateFormat.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
-
 		try {
 			Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
 			name = descriptor.getValue( "/program/information/name" );
 
 			Version version = new Version( descriptor.getValue( "/program/information/version" ) );
-			Date date = releaseDateFormat.parse( descriptor.getValue( "/program/information/timestamp" ) );
+			Date date = new Date( Long.parseLong( descriptor.getValue( "/program/information/timestamp" ) ) );
 			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
 			release = new Release( version, date );
 
