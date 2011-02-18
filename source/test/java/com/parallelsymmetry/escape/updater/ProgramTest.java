@@ -23,8 +23,6 @@ import com.parallelsymmetry.escape.utility.log.Log;
 
 public class ProgramTest extends TestCase {
 
-	private static final String RELEASE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
 	private Updater program;
 
 	private File source = new File( "source/test/resources" );
