@@ -269,7 +269,7 @@ public final class Updater {
 		ProcessBuilder builder = new ProcessBuilder( values );
 		if( workFolder != null ) builder.directory( new File( workFolder ) );
 
-		Log.write( Log.DEBUG, "Launching: " + TextUtil.toString( builder.command(), " " ) );
+		Log.write( Log.INFO, "Launching: " + TextUtil.toString( builder.command(), " " ) );
 
 		builder.start();
 		Log.write( Log.TRACE, "Updater process started." );
@@ -317,7 +317,8 @@ public final class Updater {
 		Log.write( Log.NONE, "  -log.color           Use level colors in the console output." );
 		Log.write( Log.NONE, "  -log.prefix          Use level prefixes in the console output." );
 		Log.write( Log.NONE, "  -log.file <file>     Output log messages to the specified file." );
-		Log.write( Log.NONE, "  -log.append          Append to the log file if file is used." );
+		Log.write( Log.NONE, "  -log.file.level      Same as log.level except in regardsd to the file." );
+		Log.write( Log.NONE, "  -log.file.append     Append to the log file if file is used." );
 	}
 
 }
