@@ -23,7 +23,6 @@ import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Parameters;
 import com.parallelsymmetry.escape.utility.Release;
 import com.parallelsymmetry.escape.utility.TextUtil;
-import com.parallelsymmetry.escape.utility.ThreadUtil;
 import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.Log;
 
@@ -104,7 +103,7 @@ public final class Updater {
 
 					if( count == 0 || "true".equals( parameters.get( UPDATE ) ) ) throw new IllegalArgumentException( "No update files specified." );
 
-					Log.write("Pausing to allow calling app to terminate..." );
+					Log.write( "Pausing to allow calling app to terminate..." );
 					//ThreadUtil.pause( 4000 );
 
 					while( index < count ) {
