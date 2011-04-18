@@ -23,6 +23,7 @@ import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Parameters;
 import com.parallelsymmetry.escape.utility.Release;
 import com.parallelsymmetry.escape.utility.TextUtil;
+import com.parallelsymmetry.escape.utility.ThreadUtil;
 import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.Log;
 
@@ -37,10 +38,14 @@ public final class Updater {
 	private static final String VERSION = "version";
 
 	private static final String UPDATE = "update";
+	
+	private static final String UPDATE_DELAY = "update.delay";
 
 	private static final String LAUNCH = "launch";
 
 	private static final String LAUNCH_HOME = "launch.home";
+
+	private static final String LAUNCH_DELAY = "launch.delay";
 
 	private static final String DEL_SUFFIX = ".del";
 
@@ -103,8 +108,10 @@ public final class Updater {
 
 					if( count == 0 || "true".equals( parameters.get( UPDATE ) ) ) throw new IllegalArgumentException( "No update files specified." );
 
-					Log.write( "Pausing to allow calling app to terminate..." );
-					//ThreadUtil.pause( 4000 );
+					if( parameters.isSet( UPDATE_DELAY )) {
+						Log.write( "Update delay..." );
+						ThreadUtil.pause( Long.parseLong(  parameters.get( UPDATE_DELAY ) ));
+					}
 
 					while( index < count ) {
 						String source = null;
@@ -122,6 +129,11 @@ public final class Updater {
 			}
 
 			if( parameters.isSet( LAUNCH ) ) {
+				if( parameters.isSet( LAUNCH_DELAY )) {
+					Log.write( "Launch delay..." );
+					ThreadUtil.pause( Long.parseLong(  parameters.get( LAUNCH_DELAY ) ));
+				}
+
 				try {
 					launch( parameters );
 				} catch( IOException exception ) {
@@ -142,11 +154,14 @@ public final class Updater {
 
 		if( !target.isDirectory() ) throw new IOException( "Target must be a folder: " + target );
 
+		Log.write( Log.TRACE, "Staging: " + target );
+
 		try {
 			stage( source, target );
 		} catch( ZipException exception ) {
 			throw new IOException( "Source not a valid zip file: " + source );
 		} catch( Throwable throwable ) {
+			Log.write( Log.WARN, throwable.getMessage() );
 			Log.write( Log.WARN, "Reverting: " + target );
 			revert( target, target );
 			throw throwable;
