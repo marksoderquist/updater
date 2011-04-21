@@ -31,22 +31,6 @@ public final class Updater {
 
 	private static final String COPYRIGHT = "(C)";
 
-	private static final String WHAT = "?";
-
-	private static final String HELP = "help";
-
-	private static final String VERSION = "version";
-
-	private static final String UPDATE = "update";
-	
-	private static final String UPDATE_DELAY = "update.delay";
-
-	private static final String LAUNCH = "launch";
-
-	private static final String LAUNCH_HOME = "launch.home";
-
-	private static final String LAUNCH_DELAY = "launch.delay";
-
 	private static final String DEL_SUFFIX = ".del";
 
 	private static final String ADD_SUFFIX = ".add";
@@ -91,26 +75,26 @@ public final class Updater {
 
 			printHeader();
 
-			if( parameters.isTrue( WHAT ) || parameters.isTrue( HELP ) ) {
+			if( parameters.isTrue( UpdaterFlag.WHAT ) || parameters.isTrue( UpdaterFlag.HELP ) ) {
 				printHelp();
 				return;
-			} else if( parameters.isTrue( VERSION ) ) {
+			} else if( parameters.isTrue( UpdaterFlag.VERSION ) ) {
 				printVersion();
 				return;
 			}
 
-			if( parameters.isSet( UPDATE ) ) {
-				List<String> files = parameters.getValues( UPDATE );
+			if( parameters.isSet( UpdaterFlag.UPDATE ) ) {
+				List<String> files = parameters.getValues( UpdaterFlag.UPDATE );
 
 				try {
 					int index = 0;
 					int count = files.size();
 
-					if( count == 0 || "true".equals( parameters.get( UPDATE ) ) ) throw new IllegalArgumentException( "No update files specified." );
+					if( count == 0 || "true".equals( parameters.get( UpdaterFlag.UPDATE ) ) ) throw new IllegalArgumentException( "No update files specified." );
 
-					if( parameters.isSet( UPDATE_DELAY )) {
+					if( parameters.isSet( UpdaterFlag.UPDATE_DELAY )) {
 						Log.write( "Update delay..." );
-						ThreadUtil.pause( Long.parseLong(  parameters.get( UPDATE_DELAY ) ));
+						ThreadUtil.pause( Long.parseLong(  parameters.get( UpdaterFlag.UPDATE_DELAY ) ));
 					}
 
 					while( index < count ) {
@@ -128,10 +112,10 @@ public final class Updater {
 				}
 			}
 
-			if( parameters.isSet( LAUNCH ) ) {
-				if( parameters.isSet( LAUNCH_DELAY )) {
+			if( parameters.isSet( UpdaterFlag.LAUNCH ) ) {
+				if( parameters.isSet( UpdaterFlag.LAUNCH_DELAY )) {
 					Log.write( "Launch delay..." );
-					ThreadUtil.pause( Long.parseLong(  parameters.get( LAUNCH_DELAY ) ));
+					ThreadUtil.pause( Long.parseLong(  parameters.get( UpdaterFlag.LAUNCH_DELAY ) ));
 				}
 
 				try {
@@ -281,8 +265,8 @@ public final class Updater {
 	}
 
 	private void launch( Parameters parameters ) throws IOException {
-		List<String> values = parameters.getValues( LAUNCH );
-		String workFolder = parameters.get( LAUNCH_HOME );
+		List<String> values = parameters.getValues( UpdaterFlag.LAUNCH );
+		String workFolder = parameters.get( UpdaterFlag.LAUNCH_HOME );
 
 		ProcessBuilder builder = new ProcessBuilder( values );
 		if( workFolder != null ) builder.directory( new File( workFolder ) );
