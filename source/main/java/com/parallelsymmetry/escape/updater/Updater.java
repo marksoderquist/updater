@@ -16,6 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import com.parallelsymmetry.escape.utility.DateUtil;
 import com.parallelsymmetry.escape.utility.Descriptor;
 import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.IoUtil;
@@ -92,9 +93,9 @@ public final class Updater {
 
 					if( count == 0 || "true".equals( parameters.get( UpdaterFlag.UPDATE ) ) ) throw new IllegalArgumentException( "No update files specified." );
 
-					if( parameters.isSet( UpdaterFlag.UPDATE_DELAY )) {
+					if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
 						Log.write( "Update delay..." );
-						ThreadUtil.pause( Long.parseLong(  parameters.get( UpdaterFlag.UPDATE_DELAY ) ));
+						ThreadUtil.pause( Long.parseLong( parameters.get( UpdaterFlag.UPDATE_DELAY ) ) );
 					}
 
 					while( index < count ) {
@@ -113,9 +114,9 @@ public final class Updater {
 			}
 
 			if( parameters.isSet( UpdaterFlag.LAUNCH ) ) {
-				if( parameters.isSet( UpdaterFlag.LAUNCH_DELAY )) {
+				if( parameters.isSet( UpdaterFlag.LAUNCH_DELAY ) ) {
 					Log.write( "Launch delay..." );
-					ThreadUtil.pause( Long.parseLong(  parameters.get( UpdaterFlag.LAUNCH_DELAY ) ));
+					ThreadUtil.pause( Long.parseLong( parameters.get( UpdaterFlag.LAUNCH_DELAY ) ) );
 				}
 
 				try {
@@ -169,7 +170,12 @@ public final class Updater {
 			name = descriptor.getValue( "/program/information/name" );
 
 			Version version = new Version( descriptor.getValue( "/program/information/version" ) );
-			Date date = new Date( Long.parseLong( descriptor.getValue( "/program/information/timestamp" ) ) );
+			Date date = null;
+			try {
+				date = new Date( Long.parseLong( descriptor.getValue( "/program/information/timestamp" ) ) );
+			} catch( NumberFormatException exception ) {
+				date = DateUtil.INCEPTION_DATE;
+			}
 			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
 			release = new Release( version, date );
 

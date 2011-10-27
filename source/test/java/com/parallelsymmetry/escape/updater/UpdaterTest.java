@@ -12,6 +12,7 @@ import java.util.logging.Level;
 
 import junit.framework.TestCase;
 
+import com.parallelsymmetry.escape.utility.DateUtil;
 import com.parallelsymmetry.escape.utility.Descriptor;
 import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.LineParser;
@@ -194,7 +195,12 @@ public class UpdaterTest extends TestCase {
 	private void assertCommandLineHeader( LineParser parser ) throws Exception {
 		Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
 		Version version = new Version( descriptor.getValue( "/program/information/version" ) );
-		Date date = new Date( Long.parseLong( descriptor.getValue( "/program/information/timestamp" ) ) );
+		Date date = null;
+		try {
+			date = new Date( Long.parseLong( descriptor.getValue( "/program/information/timestamp" ) ) );
+		} catch( NumberFormatException exception ) {
+			date = DateUtil.INCEPTION_DATE;
+		}
 
 		Release release = new Release( version, date );
 		int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
