@@ -157,7 +157,7 @@ public final class Updater {
 
 		//source.renameTo( new File( source.getAbsolutePath() + ".old" ) );
 
-		Log.write( "Success: " + source );
+		Log.write( "Successful update: " + source );
 	}
 
 	public static final void main( String[] commands ) {
