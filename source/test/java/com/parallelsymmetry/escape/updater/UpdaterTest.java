@@ -18,6 +18,7 @@ import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.LineParser;
 import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Release;
+import com.parallelsymmetry.escape.utility.TextUtil;
 import com.parallelsymmetry.escape.utility.Version;
 import com.parallelsymmetry.escape.utility.log.DefaultHandler;
 import com.parallelsymmetry.escape.utility.log.Log;
@@ -51,7 +52,7 @@ public class UpdaterTest extends TestCase {
 	private File update1 = new File( source, "update1.zip" );
 
 	private File update2 = new File( source, "update2.zip" );
-	
+
 	public void setUp() throws Exception {
 		Log.setLevel( Log.NONE );
 
@@ -72,6 +73,7 @@ public class UpdaterTest extends TestCase {
 	}
 
 	public void testCommandLineOutput() throws Exception {
+		Log.setLevel( Log.INFO );
 		program = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO ) );
 		assertCommandLineHeader( parser );
@@ -205,6 +207,7 @@ public class UpdaterTest extends TestCase {
 		Release release = new Release( version, date );
 		int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
 
+		assertEquals( TextUtil.pad( 60, '-' ), parser.next() );
 		assertEquals( "Escape Updater " + release.getVersion().toHumanString(), parser.next() );
 		assertEquals( "(C) 2010-" + currentYear + " Parallel Symmetry All rights reserved.", parser.next() );
 		assertEquals( "", parser.next() );

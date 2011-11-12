@@ -55,6 +55,10 @@ public final class Updater {
 	public Updater() {
 		describe();
 	}
+	
+	public String getName() {
+		return name;
+	}
 
 	public Release getRelease() {
 		return release;
@@ -284,8 +288,9 @@ public final class Updater {
 	}
 
 	private void printHeader() {
-		Log.write( Log.NONE, name + " " + release.getVersion().toHumanString() );
-		Log.write( Log.NONE, copyright + " " + copyrightNotice );
+		Log.write( Log.NONE, TextUtil.pad( 60, '-' ) );
+		Log.write( Log.NONE, getName() + " " + getRelease().getVersion().toHumanString() );
+		Log.write( Log.NONE, copyright, " ", copyrightNotice );
 		Log.write( Log.NONE );
 		if( licenseSummary != null ) {
 			Log.write( Log.NONE, licenseSummary );
