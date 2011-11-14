@@ -12,7 +12,6 @@ import java.util.logging.Level;
 
 import junit.framework.TestCase;
 
-import com.parallelsymmetry.escape.utility.DateUtil;
 import com.parallelsymmetry.escape.utility.Descriptor;
 import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.LineParser;
@@ -201,7 +200,7 @@ public class UpdaterTest extends TestCase {
 		try {
 			date = new Date( Long.parseLong( descriptor.getValue( "/program/information/timestamp" ) ) );
 		} catch( NumberFormatException exception ) {
-			date = DateUtil.INCEPTION_DATE;
+			date = new Date();
 		}
 
 		Release release = new Release( version, date );

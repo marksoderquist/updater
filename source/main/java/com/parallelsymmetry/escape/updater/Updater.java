@@ -16,7 +16,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import com.parallelsymmetry.escape.utility.DateUtil;
 import com.parallelsymmetry.escape.utility.Descriptor;
 import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.IoUtil;
@@ -178,7 +177,7 @@ public final class Updater {
 			try {
 				date = new Date( Long.parseLong( descriptor.getValue( "/program/information/timestamp" ) ) );
 			} catch( NumberFormatException exception ) {
-				date = DateUtil.INCEPTION_DATE;
+				date = new Date();
 			}
 			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
 			release = new Release( version, date );
