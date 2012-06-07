@@ -75,7 +75,7 @@ public final class Updater {
 				return;
 			}
 
-			Log.init( parameters );
+			Log.config( parameters );
 
 			describe();
 
