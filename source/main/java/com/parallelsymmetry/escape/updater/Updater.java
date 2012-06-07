@@ -12,6 +12,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.FileHandler;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -27,7 +28,9 @@ import com.parallelsymmetry.escape.utility.Release;
 import com.parallelsymmetry.escape.utility.TextUtil;
 import com.parallelsymmetry.escape.utility.ThreadUtil;
 import com.parallelsymmetry.escape.utility.Version;
+import com.parallelsymmetry.escape.utility.log.DefaultFormatter;
 import com.parallelsymmetry.escape.utility.log.Log;
+import com.parallelsymmetry.escape.utility.log.LogFlag;
 
 public final class Updater {
 
@@ -38,8 +41,12 @@ public final class Updater {
 	private static final String ADD_SUFFIX = ".add";
 
 	private Parameters parameters;
-
+	
 	private String name;
+
+	private String group;
+	
+	private String artifact;
 
 	private Release release;
 
@@ -57,8 +64,20 @@ public final class Updater {
 		describe();
 	}
 
+	public static final void main( String[] commands ) {
+		new Updater().call( commands );
+	}
+
 	public String getName() {
 		return name;
+	}
+	
+	public String getGroup() {
+		return group;
+	}
+	
+	public String getArtifact() {
+		return artifact;
 	}
 
 	public Release getRelease() {
@@ -76,6 +95,18 @@ public final class Updater {
 			}
 
 			Log.config( parameters );
+			if( !parameters.isSet( LogFlag.LOG_FILE ) ) {
+				try {
+					String pattern = new File( getProgramDataFolder(), "updater.log" ).getCanonicalPath();
+					FileHandler handler = new FileHandler( pattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
+					handler.setLevel( Log.INFO );
+					if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) ) handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
+					handler.setFormatter( new DefaultFormatter() );
+					Log.addHandler( handler );
+				} catch( IOException exception ) {
+					Log.write( exception );
+				}
+			}
 
 			describe();
 
@@ -165,14 +196,17 @@ public final class Updater {
 		Log.write( "Successful update: " + source );
 	}
 
-	public static final void main( String[] commands ) {
-		new Updater().call( commands );
+	public File getProgramDataFolder() {
+		return OperatingSystem.getUserProgramDataFolder( getArtifact(), "Escape" );
 	}
 
 	private void describe() {
 		try {
 			Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
+			
 			name = descriptor.getValue( "/program/information/name" );
+			group = descriptor.getValue( "/program/information/group" );
+			artifact = descriptor.getValue( "/program/information/artifact" );
 
 			Version version = new Version( descriptor.getValue( "/program/information/version" ) );
 			Date date = null;
