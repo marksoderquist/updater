@@ -17,10 +17,12 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import com.parallelsymmetry.escape.utility.Descriptor;
+import com.parallelsymmetry.escape.utility.ElevatedProcessBuilder;
 import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.IoUtil;
 import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Parameters;
+import com.parallelsymmetry.escape.utility.ReducedProcessBuilder;
 import com.parallelsymmetry.escape.utility.Release;
 import com.parallelsymmetry.escape.utility.TextUtil;
 import com.parallelsymmetry.escape.utility.ThreadUtil;
@@ -54,7 +56,7 @@ public final class Updater {
 	public Updater() {
 		describe();
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -276,12 +278,27 @@ public final class Updater {
 	private void launch( Parameters parameters ) throws IOException {
 		List<String> values = parameters.getValues( UpdaterFlag.LAUNCH );
 		String workFolder = parameters.get( UpdaterFlag.LAUNCH_HOME );
+		boolean launchElevated = parameters.isSet( UpdaterFlag.LAUNCH_ELEVATED );
+		boolean processElevated = OperatingSystem.isProcessElevated();
 
-		ProcessBuilder builder = new ProcessBuilder( values );
+		ProcessBuilder builder = null;
+
+		if( launchElevated ) {
+			if( processElevated ) {
+				builder = new ProcessBuilder( values );
+			} else {
+				builder = new ElevatedProcessBuilder( new ProcessBuilder( values ) ).getBuilder();
+			}
+		} else {
+			if( processElevated ) {
+				builder = new ReducedProcessBuilder( new ProcessBuilder( values ) ).getBuilder();
+			} else {
+				builder = new ProcessBuilder( values );
+			}
+		}
+
 		if( workFolder != null ) builder.directory( new File( workFolder ) );
-
 		Log.write( Log.INFO, "Launching: " + TextUtil.toString( builder.command(), " " ) );
-
 		builder.start();
 		Log.write( Log.TRACE, "Updater process started." );
 	}
