@@ -97,7 +97,10 @@ public final class Updater {
 			Log.config( parameters );
 			if( !parameters.isSet( LogFlag.LOG_FILE ) ) {
 				try {
-					String pattern = new File( getProgramDataFolder(), "updater.log" ).getCanonicalPath();
+					File folder = getProgramDataFolder();
+					String pattern = new File( folder, "program.%u.log" ).getCanonicalPath().replace( '\\', '/');
+					folder.mkdirs();
+					
 					FileHandler handler = new FileHandler( pattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
 					handler.setLevel( Log.INFO );
 					if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) ) handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
@@ -197,7 +200,7 @@ public final class Updater {
 	}
 
 	public File getProgramDataFolder() {
-		return OperatingSystem.getUserProgramDataFolder( getArtifact(), "Escape" );
+		return OperatingSystem.getUserProgramDataFolder( getArtifact(), getName() );
 	}
 
 	private void describe() {
