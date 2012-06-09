@@ -18,12 +18,10 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import com.parallelsymmetry.escape.utility.Descriptor;
-import com.parallelsymmetry.escape.utility.ElevatedProcessBuilder;
 import com.parallelsymmetry.escape.utility.FileUtil;
 import com.parallelsymmetry.escape.utility.IoUtil;
 import com.parallelsymmetry.escape.utility.OperatingSystem;
 import com.parallelsymmetry.escape.utility.Parameters;
-import com.parallelsymmetry.escape.utility.ReducedProcessBuilder;
 import com.parallelsymmetry.escape.utility.Release;
 import com.parallelsymmetry.escape.utility.TextUtil;
 import com.parallelsymmetry.escape.utility.ThreadUtil;
@@ -41,11 +39,11 @@ public final class Updater {
 	private static final String ADD_SUFFIX = ".add";
 
 	private Parameters parameters;
-	
+
 	private String name;
 
 	private String group;
-	
+
 	private String artifact;
 
 	private Release release;
@@ -71,11 +69,11 @@ public final class Updater {
 	public String getName() {
 		return name;
 	}
-	
+
 	public String getGroup() {
 		return group;
 	}
-	
+
 	public String getArtifact() {
 		return artifact;
 	}
@@ -98,9 +96,9 @@ public final class Updater {
 			if( !parameters.isSet( LogFlag.LOG_FILE ) ) {
 				try {
 					File folder = getProgramDataFolder();
-					String pattern = new File( folder, "program.log" ).getCanonicalPath().replace( '\\', '/');
+					String pattern = new File( folder, "program.log" ).getCanonicalPath().replace( '\\', '/' );
 					folder.mkdirs();
-					
+
 					FileHandler handler = new FileHandler( pattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
 					handler.setLevel( Log.INFO );
 					if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) ) handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
@@ -206,7 +204,7 @@ public final class Updater {
 	private void describe() {
 		try {
 			Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
-			
+
 			name = descriptor.getValue( "/program/information/name" );
 			group = descriptor.getValue( "/program/information/group" );
 			artifact = descriptor.getValue( "/program/information/artifact" );
@@ -324,11 +322,11 @@ public final class Updater {
 			if( processElevated ) {
 				builder = new ProcessBuilder( values );
 			} else {
-				builder = new ElevatedProcessBuilder( new ProcessBuilder( values ) ).getBuilder();
+				builder = OperatingSystem.elevateProcessBuilder( new ProcessBuilder( values ) );
 			}
 		} else {
 			if( processElevated ) {
-				builder = new ReducedProcessBuilder( new ProcessBuilder( values ) ).getBuilder();
+				builder = OperatingSystem.reduceProcessBuilder( new ProcessBuilder( values ) );
 			} else {
 				builder = new ProcessBuilder( values );
 			}
