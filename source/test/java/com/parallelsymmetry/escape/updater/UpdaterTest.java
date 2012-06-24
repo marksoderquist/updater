@@ -52,6 +52,7 @@ public class UpdaterTest extends TestCase {
 
 	private File update2 = new File( source, "update2.zip" );
 
+	@Override
 	public void setUp() throws Exception {
 		Log.setLevel( Log.NONE );
 
