@@ -54,7 +54,7 @@ public final class Updater {
 
 	private String copyrightNotice;
 
-	private String copyrightHolder;
+	private String provider;
 
 	private String licenseSummary;
 
@@ -203,27 +203,28 @@ public final class Updater {
 
 	private void describe() {
 		try {
-			Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
+			Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/product.xml" ) );
 
-			name = descriptor.getValue( "/program/information/name" );
-			group = descriptor.getValue( "/program/information/group" );
-			artifact = descriptor.getValue( "/program/information/artifact" );
+			group = descriptor.getValue( "/product/group" );
+			artifact = descriptor.getValue( "/product/artifact" );
 
-			Version version = new Version( descriptor.getValue( "/program/information/version" ) );
+			Version version = new Version( descriptor.getValue( "/product/version" ) );
 			Date date = null;
 			try {
-				date = new Date( Long.parseLong( descriptor.getValue( "/program/information/timestamp" ) ) );
+				date = new Date( Long.parseLong( descriptor.getValue( "/product/timestamp" ) ) );
 			} catch( NumberFormatException exception ) {
 				date = new Date();
 			}
 			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
 			release = new Release( version, date );
 
-			inceptionYear = Integer.parseInt( descriptor.getValue( "/program/information/inception" ) );
-			copyrightHolder = descriptor.getValue( "/program/information/organization" );
-			copyrightNotice = descriptor.getValue( "/program/information/copyright/notice" );
-			copyright = COPYRIGHT + " " + ( currentYear == inceptionYear ? currentYear : inceptionYear + "-" + currentYear ) + " " + copyrightHolder;
-			licenseSummary = TextUtil.reline( descriptor.getValue( "/program/information/license/summary" ), 79 );
+			name = descriptor.getValue( "/product/name" );
+			provider = descriptor.getValue( "/product/provider" );
+
+			inceptionYear = Integer.parseInt( descriptor.getValue( "/product/inception" ) );
+			copyrightNotice = descriptor.getValue( "/product/copyright/notice" );
+			copyright = COPYRIGHT + " " + ( currentYear == inceptionYear ? currentYear : inceptionYear + "-" + currentYear ) + " " + provider;
+			licenseSummary = TextUtil.reline( descriptor.getValue( "/product/license/summary" ), 79 );
 		} catch( Exception exception ) {
 			throw new RuntimeException( exception );
 		}

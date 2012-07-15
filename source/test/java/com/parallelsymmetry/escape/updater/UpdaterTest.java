@@ -195,11 +195,11 @@ public class UpdaterTest extends TestCase {
 	}
 
 	private void assertCommandLineHeader( LineParser parser ) throws Exception {
-		Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/program.xml" ) );
-		Version version = new Version( descriptor.getValue( "/program/information/version" ) );
+		Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/product.xml" ) );
+		Version version = new Version( descriptor.getValue( "/product/version" ) );
 		Date date = null;
 		try {
-			date = new Date( Long.parseLong( descriptor.getValue( "/program/information/timestamp" ) ) );
+			date = new Date( Long.parseLong( descriptor.getValue( "/product/timestamp" ) ) );
 		} catch( NumberFormatException exception ) {
 			date = new Date();
 		}
