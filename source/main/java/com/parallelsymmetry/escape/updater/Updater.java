@@ -235,10 +235,14 @@ public final class Updater {
 
 		ZipFile zip = new ZipFile( source );
 
-		Enumeration<? extends ZipEntry> entries = zip.entries();
-		while( entries.hasMoreElements() ) {
-			ZipEntry entry = entries.nextElement();
-			if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: " + new File( target, entry.getName() ) );
+		try {
+			Enumeration<? extends ZipEntry> entries = zip.entries();
+			while( entries.hasMoreElements() ) {
+				ZipEntry entry = entries.nextElement();
+				if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: " + new File( target, entry.getName() ) );
+			}
+		} finally {
+			if( zip != null ) zip.close();
 		}
 
 		Log.write( Log.TRACE, "Staged: " + source.getName() + " to " + target );
