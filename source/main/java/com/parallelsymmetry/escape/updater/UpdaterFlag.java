@@ -15,5 +15,5 @@ public interface UpdaterFlag extends CommonFlag {
 	public static final String UPDATE = "--update";
 
 	public static final String UPDATE_DELAY = "-update.delay";
-	
+
 }
