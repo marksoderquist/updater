@@ -10,6 +10,9 @@
 	<name>${project.name}</name>
 	<provider>${project.organization.name}</provider>
 	<inception>${project.inceptionYear}</inception>
+	
+	<summary>A command-line utility to update files</summary>
+	<description>${project.name} is a command-line utility to update files using a packaged set of files in zip format.</description>
 
 	<copyright>
 		<notice>All rights reserved.</notice>
