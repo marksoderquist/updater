@@ -208,11 +208,11 @@ public class UpdaterTest extends TestCase {
 		int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
 
 		assertEquals( TextUtil.pad( 60, '-' ), parser.next() );
-		assertEquals( "Escape Updater " + release.getVersion().toHumanString(), parser.next() );
+		assertEquals( "Parallel Symmetry Updater " + release.getVersion().toHumanString(), parser.next() );
 		assertEquals( "(C) 2010-" + currentYear + " Parallel Symmetry All rights reserved.", parser.next() );
 		assertEquals( "", parser.next() );
-		assertEquals( "Escape Updater comes with ABSOLUTELY NO WARRANTY. This is open software, and", parser.next() );
-		assertEquals( "you are welcome to redistribute it under certain conditions.", parser.next() );
+		assertEquals( "Parallel Symmetry Updater comes with ABSOLUTELY NO WARRANTY. This is open", parser.next() );
+		assertEquals( "software, and you are welcome to redistribute it under certain conditions.", parser.next() );
 		assertEquals( "", parser.next() );
 	}
 
