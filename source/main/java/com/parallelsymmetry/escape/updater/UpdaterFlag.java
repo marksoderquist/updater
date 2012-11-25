@@ -1,6 +1,6 @@
 package com.parallelsymmetry.escape.updater;
 
-import com.parallelsymmetry.escape.utility.CommonFlag;
+import com.parallelsymmetry.utility.CommonFlag;
 
 public interface UpdaterFlag extends CommonFlag {
 

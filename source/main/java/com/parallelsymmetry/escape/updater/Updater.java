@@ -17,18 +17,18 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import com.parallelsymmetry.escape.utility.Descriptor;
-import com.parallelsymmetry.escape.utility.FileUtil;
-import com.parallelsymmetry.escape.utility.IoUtil;
-import com.parallelsymmetry.escape.utility.OperatingSystem;
-import com.parallelsymmetry.escape.utility.Parameters;
-import com.parallelsymmetry.escape.utility.Release;
-import com.parallelsymmetry.escape.utility.TextUtil;
-import com.parallelsymmetry.escape.utility.ThreadUtil;
-import com.parallelsymmetry.escape.utility.Version;
-import com.parallelsymmetry.escape.utility.log.DefaultFormatter;
-import com.parallelsymmetry.escape.utility.log.Log;
-import com.parallelsymmetry.escape.utility.log.LogFlag;
+import com.parallelsymmetry.utility.Descriptor;
+import com.parallelsymmetry.utility.FileUtil;
+import com.parallelsymmetry.utility.IoUtil;
+import com.parallelsymmetry.utility.OperatingSystem;
+import com.parallelsymmetry.utility.Parameters;
+import com.parallelsymmetry.utility.Release;
+import com.parallelsymmetry.utility.TextUtil;
+import com.parallelsymmetry.utility.ThreadUtil;
+import com.parallelsymmetry.utility.Version;
+import com.parallelsymmetry.utility.log.DefaultFormatter;
+import com.parallelsymmetry.utility.log.Log;
+import com.parallelsymmetry.utility.log.LogFlag;
 
 public final class Updater {
 

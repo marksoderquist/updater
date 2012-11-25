@@ -12,15 +12,15 @@ import java.util.logging.Level;
 
 import junit.framework.TestCase;
 
-import com.parallelsymmetry.escape.utility.Descriptor;
-import com.parallelsymmetry.escape.utility.FileUtil;
-import com.parallelsymmetry.escape.utility.LineParser;
-import com.parallelsymmetry.escape.utility.OperatingSystem;
-import com.parallelsymmetry.escape.utility.Release;
-import com.parallelsymmetry.escape.utility.TextUtil;
-import com.parallelsymmetry.escape.utility.Version;
-import com.parallelsymmetry.escape.utility.log.DefaultHandler;
-import com.parallelsymmetry.escape.utility.log.Log;
+import com.parallelsymmetry.utility.Descriptor;
+import com.parallelsymmetry.utility.FileUtil;
+import com.parallelsymmetry.utility.LineParser;
+import com.parallelsymmetry.utility.OperatingSystem;
+import com.parallelsymmetry.utility.Release;
+import com.parallelsymmetry.utility.TextUtil;
+import com.parallelsymmetry.utility.Version;
+import com.parallelsymmetry.utility.log.DefaultHandler;
+import com.parallelsymmetry.utility.log.Log;
 
 public class UpdaterTest extends TestCase {
 
