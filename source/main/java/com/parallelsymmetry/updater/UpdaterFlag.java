@@ -1,4 +1,4 @@
-package com.parallelsymmetry.escape.updater;
+package com.parallelsymmetry.updater;
 
 import com.parallelsymmetry.utility.CommonFlag;
 

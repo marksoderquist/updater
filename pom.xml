@@ -75,7 +75,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>com.parallelsymmetry.escape.updater.Updater</mainClass>
+              <mainClass>com.parallelsymmetry.updater.Updater</mainClass>
             </manifest>
           </archive>
 				</configuration>

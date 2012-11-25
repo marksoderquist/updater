@@ -1,4 +1,4 @@
-package com.parallelsymmetry.escape.updater;
+package com.parallelsymmetry.updater;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -12,6 +12,7 @@ import java.util.logging.Level;
 
 import junit.framework.TestCase;
 
+import com.parallelsymmetry.updater.Updater;
 import com.parallelsymmetry.utility.Descriptor;
 import com.parallelsymmetry.utility.FileUtil;
 import com.parallelsymmetry.utility.LineParser;
