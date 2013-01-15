@@ -66,6 +66,7 @@ public final class Updater {
 		new Updater().call( commands );
 	}
 
+	// FIXME The name, group, artifact, release, etc. should come from a product card.
 	public String getName() {
 		return name;
 	}
