@@ -57,6 +57,8 @@ public final class Updater {
 	private String provider;
 
 	private String licenseSummary;
+	
+	private String logFilePattern;
 
 	public Updater() {
 		describe();
@@ -97,13 +99,16 @@ public final class Updater {
 			if( !parameters.isSet( LogFlag.LOG_FILE ) ) {
 				try {
 					File folder = getProgramDataFolder();
-					String pattern = new File( folder, "program.log" ).getCanonicalPath().replace( '\\', '/' );
 					folder.mkdirs();
 
-					FileHandler handler = new FileHandler( pattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
+					logFilePattern = new File( folder, "updater.log" ).getCanonicalPath();
+					FileHandler handler = new FileHandler( logFilePattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
 					handler.setLevel( Log.INFO );
 					if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) ) handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
-					handler.setFormatter( new DefaultFormatter() );
+
+					DefaultFormatter formatter = new DefaultFormatter();
+					formatter.setShowDate( true );
+					handler.setFormatter( formatter );
 					Log.addHandler( handler );
 				} catch( IOException exception ) {
 					Log.write( exception );
@@ -345,16 +350,18 @@ public final class Updater {
 	}
 
 	private void printHeader() {
-		Log.write( Log.NONE, TextUtil.pad( 60, '-' ) );
+		Log.write( Log.NONE, TextUtil.pad( 75, '-' ) );
 		Log.write( Log.NONE, getName() + " " + getRelease().getVersion().toHumanString() );
 		Log.write( Log.NONE, copyright, " ", copyrightNotice );
-		Log.write( Log.NONE );
 		if( licenseSummary != null ) {
-			Log.write( Log.NONE, licenseSummary );
 			Log.write( Log.NONE );
+			Log.write( Log.NONE, licenseSummary );
 		}
+		Log.write( Log.NONE, TextUtil.pad( 75, '-' ) );
+		Log.write( Log.NONE );
 
 		Log.write( Log.TRACE, "Java: " + System.getProperty( "java.runtime.version" ) );
+		Log.write( Log.TRACE, "Log : ", logFilePattern );
 	}
 
 	private void printVersion() {
