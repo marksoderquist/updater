@@ -4,14 +4,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.logging.FileHandler;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -25,14 +23,12 @@ import com.parallelsymmetry.utility.Parameters;
 import com.parallelsymmetry.utility.Release;
 import com.parallelsymmetry.utility.TextUtil;
 import com.parallelsymmetry.utility.ThreadUtil;
-import com.parallelsymmetry.utility.Version;
 import com.parallelsymmetry.utility.log.DefaultFormatter;
 import com.parallelsymmetry.utility.log.Log;
 import com.parallelsymmetry.utility.log.LogFlag;
+import com.parallelsymmetry.utility.product.ProductCard;
 
 public final class Updater {
-
-	private static final String COPYRIGHT = "(C)";
 
 	private static final String DEL_SUFFIX = ".del";
 
@@ -40,24 +36,26 @@ public final class Updater {
 
 	private Parameters parameters;
 
-	private String name;
+	private ProductCard card;
 
-	private String group;
+	//	private String name;
+	//
+	//	private String group;
+	//
+	//	private String artifact;
+	//
+	//	private Release release;
+	//
+	//	private int inceptionYear;
+	//
+	//	private String copyright;
+	//
+	//	private String copyrightNotice;
+	//
+	//	private String provider;
+	//
+	//	private String licenseSummary;
 
-	private String artifact;
-
-	private Release release;
-
-	private int inceptionYear;
-
-	private String copyright;
-
-	private String copyrightNotice;
-
-	private String provider;
-
-	private String licenseSummary;
-	
 	private String logFilePattern;
 
 	public Updater() {
@@ -68,21 +66,20 @@ public final class Updater {
 		new Updater().call( commands );
 	}
 
-	// FIXME The name, group, artifact, release, etc. should come from a product card.
 	public String getName() {
-		return name;
+		return card.getName();
 	}
 
 	public String getGroup() {
-		return group;
+		return card.getGroup();
 	}
 
 	public String getArtifact() {
-		return artifact;
+		return card.getArtifact();
 	}
 
 	public Release getRelease() {
-		return release;
+		return card.getRelease();
 	}
 
 	public void call( String[] commands ) {
@@ -209,28 +206,33 @@ public final class Updater {
 
 	private void describe() {
 		try {
-			Descriptor descriptor = new Descriptor( getClass().getResourceAsStream( "/META-INF/product.xml" ) );
+			URI uri = getClass().getResource( "/META-INF/product.xml" ).toURI();
+			card = new ProductCard( uri, new Descriptor( uri ) );
 
-			group = descriptor.getValue( "/product/group" );
-			artifact = descriptor.getValue( "/product/artifact" );
-
-			Version version = new Version( descriptor.getValue( "/product/version" ) );
-			Date date = null;
-			try {
-				date = new Date( Long.parseLong( descriptor.getValue( "/product/timestamp" ) ) );
-			} catch( NumberFormatException exception ) {
-				date = new Date();
-			}
-			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
-			release = new Release( version, date );
-
-			name = descriptor.getValue( "/product/name" );
-			provider = descriptor.getValue( "/product/provider" );
-
-			inceptionYear = Integer.parseInt( descriptor.getValue( "/product/inception" ) );
-			copyrightNotice = descriptor.getValue( "/product/copyright/notice" );
-			copyright = COPYRIGHT + " " + ( currentYear == inceptionYear ? currentYear : inceptionYear + "-" + currentYear ) + " " + provider;
-			licenseSummary = TextUtil.reline( descriptor.getValue( "/product/license/summary" ), 79 );
+			//			group = descriptor.getValue( "/product/group" );
+			//			artifact = descriptor.getValue( "/product/artifact" );
+			//
+			//			Version version = new Version( descriptor.getValue( "/product/version" ) );
+			//			Date date = null;
+			//			try {
+			//				date = new Date( Long.parseLong( descriptor.getValue( "/product/timestamp" ) ) );
+			//			} catch( NumberFormatException exception ) {
+			//				date = new Date();
+			//			}
+			//			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
+			//			release = new Release( version, date );
+			//
+			//			name = descriptor.getValue( "/product/name" );
+			//			provider = descriptor.getValue( "/product/provider" );
+			//
+			//			inceptionYear = Integer.parseInt( descriptor.getValue( "/product/inception" ) );
+			//			copyrightNotice = descriptor.getValue( "/product/copyright/notice" );
+			//			copyright = COPYRIGHT
+			//				+ " "
+			//				+ ( currentYear == inceptionYear ? currentYear : inceptionYear + "-" + currentYear )
+			//				+ " "
+			//				+ provider;
+			//			licenseSummary = TextUtil.reline( descriptor.getValue( "/product/license/summary" ), 79 );
 		} catch( Exception exception ) {
 			throw new RuntimeException( exception );
 		}
@@ -245,7 +247,8 @@ public final class Updater {
 			Enumeration<? extends ZipEntry> entries = zip.entries();
 			while( entries.hasMoreElements() ) {
 				ZipEntry entry = entries.nextElement();
-				if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: " + new File( target, entry.getName() ) );
+				if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: "
+					+ new File( target, entry.getName() ) );
 			}
 		} finally {
 			if( zip != null ) zip.close();
@@ -350,52 +353,61 @@ public final class Updater {
 	}
 
 	private void printHeader() {
-		Log.write( Log.NONE, TextUtil.pad( 75, '-' ) );
-		Log.write( Log.NONE, getName() + " " + getRelease().getVersion().toHumanString() );
-		Log.write( Log.NONE, copyright, " ", copyrightNotice );
-		if( licenseSummary != null ) {
-			Log.write( Log.NONE );
-			Log.write( Log.NONE, licenseSummary );
+		String summary = card.getLicenseSummary();
+		
+		Log.write( Log.HELP, TextUtil.pad( 75, '-' ) );
+		Log.write( Log.HELP, getName() + " " + getRelease().getVersion().toHumanString() );
+		Log.write( Log.HELP, card.getCopyright(), " ", card.getCopyrightNotice() );
+		if( summary != null ) {
+			Log.write( Log.HELP );
+			Log.write( Log.HELP, TextUtil.reline( summary, 75 ) );
 		}
-		Log.write( Log.NONE, TextUtil.pad( 75, '-' ) );
-		Log.write( Log.NONE );
+		Log.write( Log.HELP, TextUtil.pad( 75, '-' ) );
+		Log.write( Log.HELP );
 
 		Log.write( Log.TRACE, "Java: " + System.getProperty( "java.runtime.version" ) );
 		Log.write( Log.TRACE, "Log : ", logFilePattern );
 	}
 
 	private void printVersion() {
-		Log.write( Log.NONE, "Version: " + getRelease().toString() );
-		Log.write( Log.NONE, "Java version: " + System.getProperty( "java.version" ) );
-		Log.write( Log.NONE, "Java home: " + System.getProperty( "java.home" ) );
-		Log.write( Log.NONE, "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
-		Log.write( Log.NONE, "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
+		Log.write( Log.HELP, "Version: " + getRelease().toString() );
+		Log.write( Log.HELP, "Java version: " + System.getProperty( "java.version" ) );
+		Log.write( Log.HELP, "Java home: " + System.getProperty( "java.home" ) );
+		Log.write( Log.HELP, "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
+		Log.write( Log.HELP, "OS name: "
+			+ OperatingSystem.getName()
+			+ "  version: "
+			+ OperatingSystem.getVersion()
+			+ "  arch: "
+			+ OperatingSystem.getSystemArchitecture()
+			+ "  family: "
+			+ OperatingSystem.getFamily() );
 	}
 
 	private void printHelp() {
 		// ---------0--------1---------2---------3---------4---------5---------6---------7---------8
 		// ---------12345678901234567890123456789012345678901234567890123456789012345678901234567890
-		Log.write( Log.NONE, "Usage: java -jar <jar file name> [<option>...]" );
-		Log.write( Log.NONE );
-		Log.write( Log.NONE, "Commands:" );
-		Log.write( Log.NONE, "  --update <file file>..." );
-		Log.write( Log.NONE, "    Update files in pairs of two using the first as the source and the second" );
-		Log.write( Log.NONE, "    as the target. If the launch parameter is specified then the launch" );
-		Log.write( Log.NONE, "    commands are executed after the updates have been processed." );
-		Log.write( Log.NONE, "  --launch command... [-launch.home folder]" );
-		Log.write( Log.NONE );
-		Log.write( Log.NONE, "Options:" );
-		Log.write( Log.NONE, "  -help            Show help information." );
-		Log.write( Log.NONE, "  -version         Show version and copyright information only." );
-		Log.write( Log.NONE );
-		Log.write( Log.NONE, "  -log.level <level>   Change the output log level. Levels are:" );
-		Log.write( Log.NONE, "                       none, error, warn, info, trace, debug, all" );
-		Log.write( Log.NONE, "  -log.tag             Use level tags in the console output." );
-		Log.write( Log.NONE, "  -log.color           Use level colors in the console output." );
-		Log.write( Log.NONE, "  -log.prefix          Use level prefixes in the console output." );
-		Log.write( Log.NONE, "  -log.file <file>     Output log messages to the specified file." );
-		Log.write( Log.NONE, "  -log.file.level      Same as log.level except in regardsd to the file." );
-		Log.write( Log.NONE, "  -log.file.append     Append to the log file if file is used." );
+		Log.write( Log.HELP, "Usage: java -jar <jar file name> [<option>...]" );
+		Log.write( Log.HELP );
+		Log.write( Log.HELP, "Commands:" );
+		Log.write( Log.HELP, "  --update <file file>..." );
+		Log.write( Log.HELP, "    Update files in pairs of two using the first as the source and the second" );
+		Log.write( Log.HELP, "    as the target. If the launch parameter is specified then the launch" );
+		Log.write( Log.HELP, "    commands are executed after the updates have been processed." );
+		Log.write( Log.HELP, "  --launch command... [-launch.home folder]" );
+		Log.write( Log.HELP );
+		Log.write( Log.HELP, "Options:" );
+		Log.write( Log.HELP, "  -help            Show help information." );
+		Log.write( Log.HELP, "  -version         Show version and copyright information only." );
+		Log.write( Log.HELP );
+		Log.write( Log.HELP, "  -log.level <level>   Change the output log level. Levels are:" );
+		Log.write( Log.HELP, "                       none, error, warn, info, trace, debug, all" );
+		Log.write( Log.HELP, "  -log.tag             Use level tags in the console output." );
+		Log.write( Log.HELP, "  -log.color           Use level colors in the console output." );
+		Log.write( Log.HELP, "  -log.prefix          Use level prefixes in the console output." );
+		Log.write( Log.HELP, "  -log.file <file>     Output log messages to the specified file." );
+		Log.write( Log.HELP, "  -log.file.level      Same as log.level except in regardsd to the file." );
+		Log.write( Log.HELP, "  -log.file.append     Append to the log file if file is used." );
 	}
 
 }
