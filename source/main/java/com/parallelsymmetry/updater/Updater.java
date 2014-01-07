@@ -25,9 +25,10 @@ import com.parallelsymmetry.utility.ThreadUtil;
 import com.parallelsymmetry.utility.log.DefaultFormatter;
 import com.parallelsymmetry.utility.log.Log;
 import com.parallelsymmetry.utility.log.LogFlag;
+import com.parallelsymmetry.utility.product.Product;
 import com.parallelsymmetry.utility.product.ProductCard;
 
-public final class Updater {
+public final class Updater implements Product {
 
 	private static final String DEL_SUFFIX = ".del";
 
@@ -47,6 +48,7 @@ public final class Updater {
 		new Updater().call( commands );
 	}
 
+	@Override
 	public ProductCard getCard() {
 		return card;
 	}
@@ -80,7 +82,7 @@ public final class Updater {
 			Log.config( parameters );
 			if( !parameters.isSet( LogFlag.LOG_FILE ) ) {
 				try {
-					File folder = getProgramDataFolder();
+					File folder = getDataFolder();
 					folder.mkdirs();
 
 					logFilePattern = new File( folder, "updater.log" ).getCanonicalPath();
@@ -185,7 +187,8 @@ public final class Updater {
 		Log.write( "Successful update: " + source );
 	}
 
-	public File getProgramDataFolder() {
+	@Override
+	public File getDataFolder() {
 		return OperatingSystem.getUserProgramDataFolder( card.getArtifact(), card.getName() );
 	}
 
