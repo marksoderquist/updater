@@ -20,7 +20,6 @@ import com.parallelsymmetry.utility.FileUtil;
 import com.parallelsymmetry.utility.IoUtil;
 import com.parallelsymmetry.utility.OperatingSystem;
 import com.parallelsymmetry.utility.Parameters;
-import com.parallelsymmetry.utility.Release;
 import com.parallelsymmetry.utility.TextUtil;
 import com.parallelsymmetry.utility.ThreadUtil;
 import com.parallelsymmetry.utility.log.DefaultFormatter;
@@ -38,24 +37,6 @@ public final class Updater {
 
 	private ProductCard card;
 
-	//	private String name;
-	//
-	//	private String group;
-	//
-	//	private String artifact;
-	//
-	//	private Release release;
-	//
-	//	private int inceptionYear;
-	//
-	//	private String copyright;
-	//
-	//	private String copyrightNotice;
-	//
-	//	private String provider;
-	//
-	//	private String licenseSummary;
-
 	private String logFilePattern;
 
 	public Updater() {
@@ -66,21 +47,25 @@ public final class Updater {
 		new Updater().call( commands );
 	}
 
-	public String getName() {
-		return card.getName();
+	public ProductCard getCard() {
+		return card;
 	}
 
-	public String getGroup() {
-		return card.getGroup();
-	}
-
-	public String getArtifact() {
-		return card.getArtifact();
-	}
-
-	public Release getRelease() {
-		return card.getRelease();
-	}
+	//	public String getName() {
+	//		return card.getName();
+	//	}
+	//
+	//	public String getGroup() {
+	//		return card.getGroup();
+	//	}
+	//
+	//	public String getArtifact() {
+	//		return card.getArtifact();
+	//	}
+	//
+	//	public Release getRelease() {
+	//		return card.getRelease();
+	//	}
 
 	public void call( String[] commands ) {
 		try {
@@ -201,7 +186,7 @@ public final class Updater {
 	}
 
 	public File getProgramDataFolder() {
-		return OperatingSystem.getUserProgramDataFolder( getArtifact(), getName() );
+		return OperatingSystem.getUserProgramDataFolder( card.getArtifact(), card.getName() );
 	}
 
 	private void describe() {
@@ -247,8 +232,7 @@ public final class Updater {
 			Enumeration<? extends ZipEntry> entries = zip.entries();
 			while( entries.hasMoreElements() ) {
 				ZipEntry entry = entries.nextElement();
-				if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: "
-					+ new File( target, entry.getName() ) );
+				if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: " + new File( target, entry.getName() ) );
 			}
 		} finally {
 			if( zip != null ) zip.close();
@@ -354,9 +338,9 @@ public final class Updater {
 
 	private void printHeader() {
 		String summary = card.getLicenseSummary();
-		
+
 		Log.write( Log.HELP, TextUtil.pad( 75, '-' ) );
-		Log.write( Log.HELP, getName() + " " + getRelease().getVersion().toHumanString() );
+		Log.write( Log.HELP, card.getName() + " " + card.getRelease().getVersion().toHumanString() );
 		Log.write( Log.HELP, card.getCopyright(), " ", card.getCopyrightNotice() );
 		if( summary != null ) {
 			Log.write( Log.HELP );
@@ -370,18 +354,11 @@ public final class Updater {
 	}
 
 	private void printVersion() {
-		Log.write( Log.HELP, "Version: " + getRelease().toString() );
+		Log.write( Log.HELP, "Version: " + card.getRelease().toString() );
 		Log.write( Log.HELP, "Java version: " + System.getProperty( "java.version" ) );
 		Log.write( Log.HELP, "Java home: " + System.getProperty( "java.home" ) );
 		Log.write( Log.HELP, "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
-		Log.write( Log.HELP, "OS name: "
-			+ OperatingSystem.getName()
-			+ "  version: "
-			+ OperatingSystem.getVersion()
-			+ "  arch: "
-			+ OperatingSystem.getSystemArchitecture()
-			+ "  family: "
-			+ OperatingSystem.getFamily() );
+		Log.write( Log.HELP, "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
 	}
 
 	private void printHelp() {

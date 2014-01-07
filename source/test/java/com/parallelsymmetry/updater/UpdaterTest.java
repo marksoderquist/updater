@@ -25,7 +25,7 @@ import com.parallelsymmetry.utility.log.Log;
 
 public class UpdaterTest extends TestCase {
 
-	private Updater program;
+	private Updater updater;
 
 	private File source = new File( "source/test/resources" );
 
@@ -75,54 +75,54 @@ public class UpdaterTest extends TestCase {
 
 	public void testCommandLineOutput() throws Exception {
 		Log.setLevel( Log.INFO );
-		program = new Updater();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO ) );
+		updater = new Updater();
+		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineHelp( parser );
 		assertNull( parser.next() );
 	}
 
 	public void testVersionOutput() throws Exception {
-		program = new Updater();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-version" ) );
+		updater = new Updater();
+		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "-version" ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineVersion( parser );
 		assertNull( parser.next() );
 	}
 
 	public void testQuestionOutput() throws Exception {
-		program = new Updater();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-?" ) );
+		updater = new Updater();
+		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "-?" ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineHelp( parser );
 		assertNull( parser.next() );
 	}
 
 	public void testHelpOutput() throws Exception {
-		program = new Updater();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "-help" ) );
+		updater = new Updater();
+		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "-help" ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineHelp( parser );
 		assertNull( parser.next() );
 	}
 
 	public void testUpdateOutputWithNoSource() throws Exception {
-		program = new Updater();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update" ) );
+		updater = new Updater();
+		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "[E] java.lang.IllegalArgumentException: No update files specified.", parser.next() );
 	}
 
 	public void testUpdateOutputWithNoTarget() throws Exception {
-		program = new Updater();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "test.zip" ) );
+		updater = new Updater();
+		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "test.zip" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "[E] java.lang.IllegalArgumentException: Target parameter not specified.", parser.next() );
 	}
 
 	public void testUpdateOutputWithInvalidSource() throws Exception {
-		program = new Updater();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/test/update" ) );
+		updater = new Updater();
+		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
 
 		String line = parser.next();
@@ -131,8 +131,8 @@ public class UpdaterTest extends TestCase {
 	}
 
 	public void testUpdateOutputWithMissingTarget() throws Exception {
-		program = new Updater();
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/invalid" ) );
+		updater = new Updater();
+		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/invalid" ) );
 		assertCommandLineHeader( parser );
 
 		String line = parser.next();
@@ -141,9 +141,9 @@ public class UpdaterTest extends TestCase {
 	}
 
 	public void testUpdate() throws Throwable {
-		program = new Updater();
+		updater = new Updater();
 
-		program.update( update1, target );
+		updater.update( update1, target );
 		assertEquals( "Sample 1 Version 1", FileUtil.load( sample1 ).trim() );
 		assertEquals( "Sample 2 Version 1", FileUtil.load( sample2 ).trim() );
 		assertTrue( folder1.exists() );
@@ -153,7 +153,7 @@ public class UpdaterTest extends TestCase {
 		assertEquals( "File 2.1 Version 1", FileUtil.load( file2_1 ).trim() );
 		assertEquals( "File 2.2 Version 1", FileUtil.load( file2_2 ).trim() );
 
-		program.update( update2, target );
+		updater.update( update2, target );
 		assertEquals( "Sample 1 Version 2", FileUtil.load( sample1 ).trim() );
 		assertEquals( "Sample 2 Version 2", FileUtil.load( sample2 ).trim() );
 		assertTrue( folder1.exists() );
@@ -165,9 +165,9 @@ public class UpdaterTest extends TestCase {
 	}
 
 	public void testSimultaneousUpdate() throws Exception {
-		program = new Updater();
+		updater = new Updater();
 
-		LineParser parser = new LineParser( getCommandLineOutput( program, Log.INFO, "--update", "source/test/resources/update1.zip", "target/test/update", "source/test/resources/update2.zip", "target/test/update" ) );
+		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "source/test/resources/update1.zip", "target/test/update", "source/test/resources/update2.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
 
 		assertEquals( "Sample 1 Version 2", FileUtil.load( sample1 ).trim() );
@@ -219,7 +219,7 @@ public class UpdaterTest extends TestCase {
 	}
 
 	private void assertCommandLineVersion( LineParser parser ) throws Exception {
-		assertEquals( "Version: " + program.getRelease().toString(), parser.next() );
+		assertEquals( "Version: " + updater.getCard().getRelease().toString(), parser.next() );
 		assertEquals( "Java version: " + System.getProperty( "java.version" ), parser.next() );
 		assertEquals( "Java home: " + System.getProperty( "java.home" ), parser.next() );
 		assertEquals( "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset(), parser.next() );
