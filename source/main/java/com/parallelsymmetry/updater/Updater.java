@@ -323,7 +323,7 @@ public final class Updater implements Product {
 			if( processElevated ) {
 				builder = new ProcessBuilder( values );
 			} else {
-				builder = OperatingSystem.elevateProcessBuilder( new ProcessBuilder( values ) );
+				builder = OperatingSystem.elevateProcessBuilder( getCard().getName(), new ProcessBuilder( values ) );
 			}
 		} else {
 			if( processElevated ) {
