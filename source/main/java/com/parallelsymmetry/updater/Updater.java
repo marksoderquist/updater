@@ -142,8 +142,13 @@ public final class Updater implements Product {
 
 			if( parameters.isSet( UpdaterFlag.LAUNCH ) ) {
 				if( parameters.isSet( UpdaterFlag.LAUNCH_DELAY ) ) {
-					Log.write( "Launch delay..." );
-					ThreadUtil.pause( Long.parseLong( parameters.get( UpdaterFlag.LAUNCH_DELAY ) ) );
+					String delayValue = parameters.get( UpdaterFlag.LAUNCH_DELAY );
+					Log.write( "Launch delay: ", delayValue, "ms" );
+					try {
+						ThreadUtil.pause( Long.parseLong( delayValue ) );
+					} catch( NumberFormatException exception ) {
+						Log.write( exception );
+					}
 				}
 
 				try {
