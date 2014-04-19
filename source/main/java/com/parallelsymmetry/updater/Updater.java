@@ -17,6 +17,7 @@ import java.util.zip.ZipFile;
 
 import com.parallelsymmetry.utility.Descriptor;
 import com.parallelsymmetry.utility.FileUtil;
+import com.parallelsymmetry.utility.HashUtil;
 import com.parallelsymmetry.utility.IoUtil;
 import com.parallelsymmetry.utility.OperatingSystem;
 import com.parallelsymmetry.utility.Parameters;
@@ -121,8 +122,13 @@ public final class Updater implements Product {
 					if( count == 0 || "true".equals( parameters.get( UpdaterFlag.UPDATE ) ) ) throw new IllegalArgumentException( "No update files specified." );
 
 					if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
-						Log.write( "Update delay..." );
-						ThreadUtil.pause( Long.parseLong( parameters.get( UpdaterFlag.UPDATE_DELAY ) ) );
+						String delayValue = parameters.get( UpdaterFlag.UPDATE_DELAY );
+						Log.write( "Update delay: ", delayValue, "ms" );
+						try {
+							ThreadUtil.pause( Long.parseLong( delayValue ) );
+						} catch( NumberFormatException exception ) {
+							Log.write( exception );
+						}
 					}
 
 					while( index < count ) {
@@ -277,7 +283,7 @@ public final class Updater implements Product {
 	}
 
 	private void commit( File root, File target ) {
-		// Commit staged changes to their original state.
+		// Commit staged changes.
 		if( target.isDirectory() ) {
 			File[] files = target.listFiles();
 			for( File file : files ) {
@@ -285,8 +291,11 @@ public final class Updater implements Product {
 			}
 		} else {
 			if( target.getName().endsWith( ADD_SUFFIX ) ) {
+				String sourceHash = HashUtil.hash( target );
 				File file = FileUtil.removeExtension( target );
 				target.renameTo( file );
+				String targetHash = HashUtil.hash( file );
+				if( !targetHash.equals( sourceHash ) ) throw new RuntimeException( "Hash code mismatch commiting file: " + file );
 				Log.write( Log.TRACE, "Commit: " + relativize( root, file ) );
 			} else if( target.getName().endsWith( DEL_SUFFIX ) ) {
 				File file = FileUtil.removeExtension( target );
@@ -297,7 +306,7 @@ public final class Updater implements Product {
 	}
 
 	private void revert( File root, File target ) {
-		// Revert staged changes to their original state.
+		// Revert staged changes.
 		if( target.isDirectory() ) {
 			File[] files = target.listFiles();
 			for( File file : files ) {
