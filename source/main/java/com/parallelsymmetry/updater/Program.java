@@ -32,7 +32,7 @@ import com.parallelsymmetry.utility.product.ProductCard;
  * @author SoderquistMV
  */
 
-public final class Updater implements Product {
+public final class Program implements Product {
 
 	private Parameters parameters;
 
@@ -40,12 +40,12 @@ public final class Updater implements Product {
 
 	private String logFilePattern;
 
-	public Updater() {
+	public Program() {
 		describe();
 	}
 
 	public static final void main( String[] commands ) {
-		new Updater().call( commands );
+		new Program().call( commands );
 	}
 
 	@Override

@@ -75,7 +75,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>com.parallelsymmetry.updater.Updater</mainClass>
+              <mainClass>com.parallelsymmetry.updater.Program</mainClass>
             </manifest>
           </archive>
 				</configuration>

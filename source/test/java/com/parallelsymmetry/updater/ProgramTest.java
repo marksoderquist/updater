@@ -22,7 +22,7 @@ import com.parallelsymmetry.utility.Version;
 import com.parallelsymmetry.utility.log.DefaultHandler;
 import com.parallelsymmetry.utility.log.Log;
 
-public class UpdaterTest extends BaseTestCase {
+public class ProgramTest extends BaseTestCase {
 
 	public void testCommandLineOutput() throws Exception {
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO ) );
@@ -126,7 +126,7 @@ public class UpdaterTest extends BaseTestCase {
 		assertEquals( "File 2.2 Version 2", FileUtil.load( file2_2 ).trim() );
 	}
 
-	private String getCommandLineOutput( Updater service, Level level, String... commands ) throws Exception {
+	private String getCommandLineOutput( Program service, Level level, String... commands ) throws Exception {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		DefaultHandler handler = new DefaultHandler( new PrintStream( buffer ) );
 		handler.setLevel( level );
