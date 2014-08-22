@@ -12,8 +12,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
 
-import junit.framework.TestCase;
-
 import com.parallelsymmetry.utility.Descriptor;
 import com.parallelsymmetry.utility.FileUtil;
 import com.parallelsymmetry.utility.LineParser;
@@ -24,59 +22,9 @@ import com.parallelsymmetry.utility.Version;
 import com.parallelsymmetry.utility.log.DefaultHandler;
 import com.parallelsymmetry.utility.log.Log;
 
-public class UpdaterTest extends TestCase {
-
-	private Updater updater;
-
-	private File source = new File( "source/test/resources" );
-
-	private File target = new File( "target/test/update" );
-
-	private File sample1 = new File( target, "sample.1.txt" );
-
-	private File sample2 = new File( target, "sample.2.txt" );
-
-	private File folder1 = new File( target, "folder1" );
-
-	private File file1_1 = new File( folder1, "file.1.1.txt" );
-
-	private File file1_2 = new File( folder1, "file.1.2.txt" );
-
-	private File folder2 = new File( target, "folder2" );
-
-	private File file2_1 = new File( folder2, "file.2.1.txt" );
-
-	private File file2_2 = new File( folder2, "file.2.2.txt" );
-
-	private File update0 = new File( source, "update0.zip" );
-
-	private File update1 = new File( source, "update1.zip" );
-
-	private File update2 = new File( source, "update2.zip" );
-
-	@Override
-	public void setUp() throws Exception {
-		Log.setLevel( Log.NONE );
-
-		FileUtil.delete( target );
-		target.mkdirs();
-		assertTrue( target.exists() );
-
-		FileUtil.unzip( update0, target );
-
-		assertEquals( "Sample 1 Version 0", FileUtil.load( sample1 ).trim() );
-		assertFalse( sample2.exists() );
-		assertFalse( folder1.exists() );
-		assertFalse( file1_1.exists() );
-		assertFalse( file1_2.exists() );
-		assertTrue( folder2.exists() );
-		assertFalse( file2_1.exists() );
-		assertEquals( "File 2.2 Version 0", FileUtil.load( file2_2 ).trim() );
-	}
+public class UpdaterTest extends BaseTestCase {
 
 	public void testCommandLineOutput() throws Exception {
-		Log.setLevel( Log.INFO );
-		updater = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineHelp( parser );
@@ -84,7 +32,6 @@ public class UpdaterTest extends TestCase {
 	}
 
 	public void testVersionOutput() throws Exception {
-		updater = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "-version" ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineVersion( parser );
@@ -92,7 +39,6 @@ public class UpdaterTest extends TestCase {
 	}
 
 	public void testQuestionOutput() throws Exception {
-		updater = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "-?" ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineHelp( parser );
@@ -100,7 +46,6 @@ public class UpdaterTest extends TestCase {
 	}
 
 	public void testHelpOutput() throws Exception {
-		updater = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "-help" ) );
 		assertCommandLineHeader( parser );
 		assertCommandLineHelp( parser );
@@ -108,8 +53,6 @@ public class UpdaterTest extends TestCase {
 	}
 
 	public void testVersionOutputUsingStdin() throws Exception {
-		updater = new Updater();
-
 		InputStream stdin = System.in;
 		InputStream commandInput = new ByteArrayInputStream( "-version".getBytes( TextUtil.DEFAULT_CHARSET ) );
 		System.setIn( commandInput );
@@ -125,8 +68,6 @@ public class UpdaterTest extends TestCase {
 	}
 
 	public void testHelpOutputUsingStdin() throws Exception {
-		updater = new Updater();
-
 		InputStream stdin = System.in;
 		InputStream commandInput = new ByteArrayInputStream( "-help".getBytes( TextUtil.DEFAULT_CHARSET ) );
 		System.setIn( commandInput );
@@ -142,21 +83,18 @@ public class UpdaterTest extends TestCase {
 	}
 
 	public void testUpdateOutputWithNoSource() throws Exception {
-		updater = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "[E] java.lang.IllegalArgumentException: No update files specified.", parser.next() );
 	}
 
 	public void testUpdateOutputWithNoTarget() throws Exception {
-		updater = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "test.zip" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "[E] java.lang.IllegalArgumentException: Target parameter not specified.", parser.next() );
 	}
 
 	public void testUpdateOutputWithInvalidSource() throws Exception {
-		updater = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
 
@@ -166,7 +104,6 @@ public class UpdaterTest extends TestCase {
 	}
 
 	public void testUpdateOutputWithMissingTarget() throws Exception {
-		updater = new Updater();
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/invalid" ) );
 		assertCommandLineHeader( parser );
 
@@ -175,33 +112,7 @@ public class UpdaterTest extends TestCase {
 		assertTrue( line.endsWith( "target" + File.separator + "invalid" ) );
 	}
 
-	public void testUpdate() throws Throwable {
-		updater = new Updater();
-
-		updater.update( update1, target );
-		assertEquals( "Sample 1 Version 1", FileUtil.load( sample1 ).trim() );
-		assertEquals( "Sample 2 Version 1", FileUtil.load( sample2 ).trim() );
-		assertTrue( folder1.exists() );
-		assertEquals( "File 1.1 Version 1", FileUtil.load( file1_1 ).trim() );
-		assertEquals( "File 1.2 Version 1", FileUtil.load( file1_2 ).trim() );
-		assertTrue( folder2.exists() );
-		assertEquals( "File 2.1 Version 1", FileUtil.load( file2_1 ).trim() );
-		assertEquals( "File 2.2 Version 1", FileUtil.load( file2_2 ).trim() );
-
-		updater.update( update2, target );
-		assertEquals( "Sample 1 Version 2", FileUtil.load( sample1 ).trim() );
-		assertEquals( "Sample 2 Version 2", FileUtil.load( sample2 ).trim() );
-		assertTrue( folder1.exists() );
-		assertEquals( "File 1.1 Version 2", FileUtil.load( file1_1 ).trim() );
-		assertEquals( "File 1.2 Version 2", FileUtil.load( file1_2 ).trim() );
-		assertTrue( folder2.exists() );
-		assertEquals( "File 2.1 Version 2", FileUtil.load( file2_1 ).trim() );
-		assertEquals( "File 2.2 Version 2", FileUtil.load( file2_2 ).trim() );
-	}
-
 	public void testSimultaneousUpdate() throws Exception {
-		updater = new Updater();
-
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "source/test/resources/update1.zip", "target/test/update", "source/test/resources/update2.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
 
@@ -221,13 +132,13 @@ public class UpdaterTest extends TestCase {
 		handler.setLevel( level );
 		Log.addHandler( handler );
 
-		try {
+		try {	 
 			service.call( commands );
 		} finally {
 			Log.removeHandler( handler );
 		}
 
-		return buffer.toString( "UTF-8" );
+		return buffer.toString( TextUtil.DEFAULT_ENCODING );
 	}
 
 	private void assertCommandLineHeader( LineParser parser ) throws Exception {
