@@ -40,6 +40,12 @@ public final class Program implements Product {
 
 	private String logFilePattern;
 
+	private List<UpdateTask> updateTasks;
+
+	private List<LaunchTask> launchTasks;
+
+	private boolean needsElevation;
+
 	public Program() {
 		describe();
 	}
@@ -101,7 +107,7 @@ public final class Program implements Product {
 				return;
 			}
 
-			List<UpdateTask> updateTasks = new ArrayList<UpdateTask>();
+			updateTasks = new ArrayList<UpdateTask>();
 			if( parameters.isSet( UpdaterFlag.UPDATE ) ) {
 				List<String> files = parameters.getValues( UpdaterFlag.UPDATE );
 
@@ -118,7 +124,9 @@ public final class Program implements Product {
 						if( index + 1 < count ) target = files.get( index + 1 );
 						if( source == null ) throw new IllegalArgumentException( "Source parameter not specified." );
 						if( target == null ) throw new IllegalArgumentException( "Target parameter not specified." );
-						updateTasks.add( new FileUpdaterTask( new File( source ).getCanonicalFile(), new File( target ).getCanonicalFile() ) );
+						FileUpdateTask task = new FileUpdateTask( new File( source ).getCanonicalFile(), new File( target ).getCanonicalFile() );
+						updateTasks.add( task );
+						needsElevation |= task.needsElevation();
 						index += 2;
 					}
 				} catch( RuntimeException exception ) {
@@ -126,7 +134,7 @@ public final class Program implements Product {
 				}
 			}
 
-			List<LaunchTask> launchTasks = new ArrayList<LaunchTask>();
+			launchTasks = new ArrayList<LaunchTask>();
 			if( parameters.isSet( UpdaterFlag.LAUNCH ) ) {
 				List<String> values = parameters.getValues( UpdaterFlag.LAUNCH );
 				String workFolder = parameters.get( UpdaterFlag.LAUNCH_HOME );
@@ -134,47 +142,71 @@ public final class Program implements Product {
 				launchTasks.add( new ProcessLaunchTask( this, values, workFolder, launchElevated ) );
 			}
 
-			// Pause if an update delay is set.
-			if( parameters.isSet( UpdaterFlag.UPDATE ) && parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
-				String delayValue = parameters.get( UpdaterFlag.UPDATE_DELAY );
-				Log.write( "Update delay: ", delayValue, "ms" );
-				try {
-					ThreadUtil.pause( Long.parseLong( delayValue ) );
-				} catch( NumberFormatException exception ) {
-					Log.write( exception );
-				}
-			}
-
-			// Execute the update tasks.
-			for( UpdateTask task : updateTasks ) {
-				try {
-					task.execute();
-				} catch( IOException exception ) {
-					Log.write( exception );
-				}
-			}
-
-			// Pause if a launch delay is set.
-			if( parameters.isSet( UpdaterFlag.LAUNCH_DELAY ) ) {
-				String delayValue = parameters.get( UpdaterFlag.LAUNCH_DELAY );
-				Log.write( "Launch delay: ", delayValue, "ms" );
-				try {
-					ThreadUtil.pause( Long.parseLong( delayValue ) );
-				} catch( NumberFormatException exception ) {
-					Log.write( exception );
-				}
-			}
-
-			// Execute the launch tasks.
-			for( LaunchTask task : launchTasks ) {
-				try {
-					task.execute();
-				} catch( IOException exception ) {
-					Log.write( exception );
-				}
-			}
+			process();
 		} catch( Throwable throwable ) {
 			Log.write( throwable );
+		}
+	}
+
+	private void process() {
+		if( needsElevation ) {
+			updateElevated();
+		} else {
+			update();
+		}
+		launch();
+	}
+	
+	private void updateElevated() {
+		// NEXT Continue work launching elevated process.
+		
+		// Use current command parameters to start an elevated process.
+		
+		//Log.write( Log.DEVEL, "Update needs elevated privileges." );
+		update();
+	}
+
+	private void update() {
+		// Pause if an update delay is set.
+		if( parameters.isSet( UpdaterFlag.UPDATE ) && parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
+			String delayValue = parameters.get( UpdaterFlag.UPDATE_DELAY );
+			Log.write( "Update delay: ", delayValue, "ms" );
+			try {
+				ThreadUtil.pause( Long.parseLong( delayValue ) );
+			} catch( NumberFormatException exception ) {
+				Log.write( exception );
+			}
+		}
+
+		// Execute the update tasks.
+		for( UpdateTask task : updateTasks ) {
+			try {
+				task.execute();
+			} catch( Throwable throwable ) {
+				Log.write( throwable );
+			}
+		}
+	}
+
+	private void launch() {
+		// Pause if a launch delay is set.
+		if( parameters.isSet( UpdaterFlag.LAUNCH_DELAY ) ) {
+			String delayValue = parameters.get( UpdaterFlag.LAUNCH_DELAY );
+			Log.write( "Launch delay: ", delayValue, "ms" );
+			try {
+				ThreadUtil.pause( Long.parseLong( delayValue ) );
+			} catch( NumberFormatException exception ) {
+				Log.write( exception );
+			}
+		}
+
+		// Execute the launch tasks.
+		for( LaunchTask task : launchTasks ) {
+			try {
+				task.execute();
+			} catch( Throwable throwable ) {
+				Log.write( throwable );
+			}
 		}
 	}
 

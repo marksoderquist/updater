@@ -14,7 +14,7 @@ import com.parallelsymmetry.utility.HashUtil;
 import com.parallelsymmetry.utility.IoUtil;
 import com.parallelsymmetry.utility.log.Log;
 
-public class FileUpdaterTask implements UpdateTask {
+public class FileUpdateTask implements UpdateTask {
 
 	private static final String DEL_SUFFIX = ".del";
 
@@ -24,7 +24,7 @@ public class FileUpdaterTask implements UpdateTask {
 
 	private File target;
 
-	public FileUpdaterTask( File source, File target ) {
+	public FileUpdateTask( File source, File target ) {
 		this.source = source;
 		this.target = target;
 	}
