@@ -1,7 +1,9 @@
 package com.parallelsymmetry.updater;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.util.Calendar;
@@ -12,7 +14,6 @@ import java.util.logging.Level;
 
 import junit.framework.TestCase;
 
-import com.parallelsymmetry.updater.Updater;
 import com.parallelsymmetry.utility.Descriptor;
 import com.parallelsymmetry.utility.FileUtil;
 import com.parallelsymmetry.utility.LineParser;
@@ -104,6 +105,40 @@ public class UpdaterTest extends TestCase {
 		assertCommandLineHeader( parser );
 		assertCommandLineHelp( parser );
 		assertNull( parser.next() );
+	}
+
+	public void testVersionOutputUsingStdin() throws Exception {
+		updater = new Updater();
+
+		InputStream stdin = System.in;
+		InputStream commandInput = new ByteArrayInputStream( "-version".getBytes( TextUtil.DEFAULT_CHARSET ) );
+		System.setIn( commandInput );
+		try {
+			LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "-stdin" ) );
+			assertCommandLineHeader( parser );
+			assertCommandLineVersion( parser );
+			assertNull( parser.next() );
+		} finally {
+			System.setIn( stdin );
+		}
+
+	}
+
+	public void testHelpOutputUsingStdin() throws Exception {
+		updater = new Updater();
+
+		InputStream stdin = System.in;
+		InputStream commandInput = new ByteArrayInputStream( "-help".getBytes( TextUtil.DEFAULT_CHARSET ) );
+		System.setIn( commandInput );
+		try {
+			LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "-stdin" ) );
+			assertCommandLineHeader( parser );
+			assertCommandLineHelp( parser );
+			assertNull( parser.next() );
+		} finally {
+			System.setIn( stdin );
+		}
+
 	}
 
 	public void testUpdateOutputWithNoSource() throws Exception {
@@ -223,7 +258,14 @@ public class UpdaterTest extends TestCase {
 		assertEquals( "Java version: " + System.getProperty( "java.version" ), parser.next() );
 		assertEquals( "Java home: " + System.getProperty( "java.home" ), parser.next() );
 		assertEquals( "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset(), parser.next() );
-		assertEquals( "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily(), parser.next() );
+		assertEquals( "OS name: "
+			+ OperatingSystem.getName()
+			+ "  version: "
+			+ OperatingSystem.getVersion()
+			+ "  arch: "
+			+ OperatingSystem.getSystemArchitecture()
+			+ "  family: "
+			+ OperatingSystem.getFamily(), parser.next() );
 		assertEquals( "", parser.next() );
 	}
 

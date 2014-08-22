@@ -11,6 +11,8 @@ public interface UpdaterFlag extends CommonFlag {
 	public static final String LAUNCH_ELEVATED = "-launch.elevated";
 
 	public static final String LAUNCH_HOME = "-launch.home";
+	
+	public static final String STDIN = "-stdin";
 
 	public static final String UPDATE = "--update";
 

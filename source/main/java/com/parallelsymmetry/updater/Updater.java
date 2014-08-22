@@ -54,10 +54,16 @@ public final class Updater implements Product {
 		return card;
 	}
 
+	@Override
+	public File getDataFolder() {
+		return OperatingSystem.getUserProgramDataFolder( card.getArtifact(), card.getName() );
+	}
+
 	public void call( String[] commands ) {
 		try {
 			try {
 				parameters = Parameters.parse( commands );
+				if( parameters.isSet( UpdaterFlag.STDIN ) ) parameters = Parameters.parse( readStdinCommands() );
 			} catch( InvalidParameterException exception ) {
 				Log.write( Log.ERROR, exception.getMessage() );
 				printHelp();
@@ -182,11 +188,6 @@ public final class Updater implements Product {
 		Log.write( "Successful update: " + source );
 	}
 
-	@Override
-	public File getDataFolder() {
-		return OperatingSystem.getUserProgramDataFolder( card.getArtifact(), card.getName() );
-	}
-
 	private void describe() {
 		try {
 			URI uri = getClass().getResource( "/META-INF/product.xml" ).toURI();
@@ -205,7 +206,8 @@ public final class Updater implements Product {
 			Enumeration<? extends ZipEntry> entries = zip.entries();
 			while( entries.hasMoreElements() ) {
 				ZipEntry entry = entries.nextElement();
-				if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: " + new File( target, entry.getName() ) );
+				if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: "
+					+ new File( target, entry.getName() ) );
 			}
 		} finally {
 			if( zip != null ) zip.close();
@@ -334,7 +336,14 @@ public final class Updater implements Product {
 		Log.write( Log.HELP, "Java version: " + System.getProperty( "java.version" ) );
 		Log.write( Log.HELP, "Java home: " + System.getProperty( "java.home" ) );
 		Log.write( Log.HELP, "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
-		Log.write( Log.HELP, "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
+		Log.write( Log.HELP, "OS name: "
+			+ OperatingSystem.getName()
+			+ "  version: "
+			+ OperatingSystem.getVersion()
+			+ "  arch: "
+			+ OperatingSystem.getSystemArchitecture()
+			+ "  family: "
+			+ OperatingSystem.getFamily() );
 	}
 
 	private void printHelp() {
@@ -361,6 +370,10 @@ public final class Updater implements Product {
 		Log.write( Log.HELP, "  -log.file <file>     Output log messages to the specified file." );
 		Log.write( Log.HELP, "  -log.file.level      Same as log.level except in regardsd to the file." );
 		Log.write( Log.HELP, "  -log.file.append     Append to the log file if file is used." );
+	}
+
+	private String[] readStdinCommands() throws IOException {
+		return IoUtil.loadAsLineArray( System.in, TextUtil.DEFAULT_ENCODING );
 	}
 
 }
