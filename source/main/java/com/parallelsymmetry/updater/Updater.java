@@ -54,22 +54,6 @@ public final class Updater implements Product {
 		return card;
 	}
 
-	//	public String getName() {
-	//		return card.getName();
-	//	}
-	//
-	//	public String getGroup() {
-	//		return card.getGroup();
-	//	}
-	//
-	//	public String getArtifact() {
-	//		return card.getArtifact();
-	//	}
-	//
-	//	public Release getRelease() {
-	//		return card.getRelease();
-	//	}
-
 	public void call( String[] commands ) {
 		try {
 			try {
@@ -207,31 +191,6 @@ public final class Updater implements Product {
 		try {
 			URI uri = getClass().getResource( "/META-INF/product.xml" ).toURI();
 			card = new ProductCard( uri, new Descriptor( uri ) );
-
-			//			group = descriptor.getValue( "/product/group" );
-			//			artifact = descriptor.getValue( "/product/artifact" );
-			//
-			//			Version version = new Version( descriptor.getValue( "/product/version" ) );
-			//			Date date = null;
-			//			try {
-			//				date = new Date( Long.parseLong( descriptor.getValue( "/product/timestamp" ) ) );
-			//			} catch( NumberFormatException exception ) {
-			//				date = new Date();
-			//			}
-			//			int currentYear = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).get( Calendar.YEAR );
-			//			release = new Release( version, date );
-			//
-			//			name = descriptor.getValue( "/product/name" );
-			//			provider = descriptor.getValue( "/product/provider" );
-			//
-			//			inceptionYear = Integer.parseInt( descriptor.getValue( "/product/inception" ) );
-			//			copyrightNotice = descriptor.getValue( "/product/copyright/notice" );
-			//			copyright = COPYRIGHT
-			//				+ " "
-			//				+ ( currentYear == inceptionYear ? currentYear : inceptionYear + "-" + currentYear )
-			//				+ " "
-			//				+ provider;
-			//			licenseSummary = TextUtil.reline( descriptor.getValue( "/product/license/summary" ), 79 );
 		} catch( Exception exception ) {
 			throw new RuntimeException( exception );
 		}
