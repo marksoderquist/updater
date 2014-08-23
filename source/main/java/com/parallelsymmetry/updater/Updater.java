@@ -70,14 +70,20 @@ public final class Updater implements Product {
 
 	public void call( String[] commands ) {
 		try {
+			boolean stdin = false;
 			try {
 				parameters = Parameters.parse( commands );
-				if( parameters.isSet( UpdaterFlag.STDIN ) ) parameters = Parameters.parse( IoUtil.loadAsLineArray( System.in, TextUtil.DEFAULT_ENCODING ) );
+				if( parameters.isSet( UpdaterFlag.STDIN ) ) {
+					parameters = Parameters.parse( IoUtil.loadAsLineArray( System.in, TextUtil.DEFAULT_ENCODING ) );
+					stdin = true;
+				}
 			} catch( InvalidParameterException exception ) {
 				Log.write( Log.ERROR, exception.getMessage() );
 				printHelp();
 				return;
 			}
+			
+			Log.write( Log.DEVEL, "Sdtin: " + parameters.toString() );
 
 			boolean isElevated = parameters.isTrue( UpdaterFlag.ELEVATED );
 
