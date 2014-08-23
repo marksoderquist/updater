@@ -30,7 +30,7 @@ public class FileUpdateTask implements UpdateTask {
 	}
 
 	public boolean needsElevation() {
-		return !FileUtil.isWritable( target );
+		return target.exists() && !FileUtil.isWritable( target );
 	}
 
 	public void execute() throws Throwable {

@@ -9,7 +9,7 @@ import junit.framework.TestCase;
 
 public abstract class BaseTestCase extends TestCase {
 
-	protected Program updater;
+	protected Updater updater;
 
 	protected File source = new File( "source/test/resources" );
 
@@ -56,7 +56,7 @@ public abstract class BaseTestCase extends TestCase {
 		assertFalse( file2_1.exists() );
 		assertEquals( "File 2.2 Version 0", FileUtil.load( file2_2 ).trim() );
 
-		updater = new Program();
+		updater = new Updater();
 	}
 
 }

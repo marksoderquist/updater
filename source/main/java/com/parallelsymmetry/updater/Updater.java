@@ -2,6 +2,9 @@ package com.parallelsymmetry.updater;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
@@ -12,6 +15,7 @@ import java.util.logging.FileHandler;
 
 import com.parallelsymmetry.utility.Descriptor;
 import com.parallelsymmetry.utility.IoUtil;
+import com.parallelsymmetry.utility.JavaUtil;
 import com.parallelsymmetry.utility.OperatingSystem;
 import com.parallelsymmetry.utility.Parameters;
 import com.parallelsymmetry.utility.TextUtil;
@@ -32,7 +36,7 @@ import com.parallelsymmetry.utility.product.ProductCard;
  * @author SoderquistMV
  */
 
-public final class Program implements Product {
+public final class Updater implements Product {
 
 	private Parameters parameters;
 
@@ -46,12 +50,12 @@ public final class Program implements Product {
 
 	private boolean needsElevation;
 
-	public Program() {
+	public Updater() {
 		describe();
 	}
 
 	public static final void main( String[] commands ) {
-		new Program().call( commands );
+		new Updater().call( commands );
 	}
 
 	@Override
@@ -75,23 +79,27 @@ public final class Program implements Product {
 				return;
 			}
 
-			Log.config( parameters );
-			if( !parameters.isSet( LogFlag.LOG_FILE ) ) {
-				try {
-					File folder = getDataFolder();
-					folder.mkdirs();
+			boolean isElevated = parameters.isTrue( UpdaterFlag.ELEVATED );
 
-					logFilePattern = new File( folder, "updater.log" ).getCanonicalPath();
-					FileHandler handler = new FileHandler( logFilePattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
-					handler.setLevel( Log.INFO );
-					if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) ) handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
+			if( !isElevated ) {
+				Log.config( parameters );
+				if( !parameters.isSet( LogFlag.LOG_FILE ) ) {
+					try {
+						File folder = getDataFolder();
+						folder.mkdirs();
 
-					DefaultFormatter formatter = new DefaultFormatter();
-					formatter.setShowDate( true );
-					handler.setFormatter( formatter );
-					Log.addHandler( handler );
-				} catch( IOException exception ) {
-					Log.write( exception );
+						logFilePattern = new File( folder, "updater.log" ).getCanonicalPath();
+						FileHandler handler = new FileHandler( logFilePattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
+						handler.setLevel( Log.INFO );
+						if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) ) handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
+
+						DefaultFormatter formatter = new DefaultFormatter();
+						formatter.setShowDate( true );
+						handler.setFormatter( formatter );
+						Log.addHandler( handler );
+					} catch( IOException exception ) {
+						Log.write( exception );
+					}
 				}
 			}
 
@@ -99,12 +107,14 @@ public final class Program implements Product {
 
 			printHeader();
 
-			if( parameters.size() == 0 || parameters.isTrue( UpdaterFlag.WHAT ) || parameters.isTrue( UpdaterFlag.HELP ) ) {
-				printHelp();
-				return;
-			} else if( parameters.isTrue( UpdaterFlag.VERSION ) ) {
-				printVersion();
-				return;
+			if( !isElevated ) {
+				if( parameters.size() == 0 || parameters.isTrue( UpdaterFlag.WHAT ) || parameters.isTrue( UpdaterFlag.HELP ) ) {
+					printHelp();
+					return;
+				} else if( parameters.isTrue( UpdaterFlag.VERSION ) ) {
+					printVersion();
+					return;
+				}
 			}
 
 			updateTasks = new ArrayList<UpdateTask>();
@@ -134,12 +144,14 @@ public final class Program implements Product {
 				}
 			}
 
-			launchTasks = new ArrayList<LaunchTask>();
-			if( parameters.isSet( UpdaterFlag.LAUNCH ) ) {
-				List<String> values = parameters.getValues( UpdaterFlag.LAUNCH );
-				String workFolder = parameters.get( UpdaterFlag.LAUNCH_HOME );
-				boolean launchElevated = parameters.isSet( UpdaterFlag.LAUNCH_ELEVATED );
-				launchTasks.add( new ProcessLaunchTask( this, values, workFolder, launchElevated ) );
+			if( !isElevated ) {
+				launchTasks = new ArrayList<LaunchTask>();
+				if( parameters.isSet( UpdaterFlag.LAUNCH ) ) {
+					List<String> values = parameters.getValues( UpdaterFlag.LAUNCH );
+					String workFolder = parameters.get( UpdaterFlag.LAUNCH_HOME );
+					boolean launchElevated = parameters.isSet( UpdaterFlag.LAUNCH_ELEVATED );
+					launchTasks.add( new ProcessLaunchTask( this, values, workFolder, launchElevated ) );
+				}
 			}
 
 			process();
@@ -156,14 +168,46 @@ public final class Program implements Product {
 		}
 		launch();
 	}
-	
+
 	private void updateElevated() {
-		// NEXT Continue work launching elevated process.
-		
+		//Log.write( Log.DEVEL, "Launch updates with elevated privileges." );
 		// Use current command parameters to start an elevated process.
-		
-		//Log.write( Log.DEVEL, "Update needs elevated privileges." );
-		update();
+		ProcessBuilder builder = new ProcessBuilder( OperatingSystem.isWindows() ? "javaw" : "java" );
+		builder.directory( new File( System.getProperty( "user.dir" ) ) );
+
+		// Add the VM parameters to the commands.
+		RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
+		for( String command : runtimeBean.getInputArguments() ) {
+			if( !builder.command().contains( command ) ) builder.command().add( command );
+		}
+
+		// Add the classpath information.
+		List<URI> classpath = JavaUtil.getClasspath();
+		boolean jar = classpath.size() == 1 && classpath.get( 0 ).getPath().endsWith( ".jar" );
+		if( jar ) {
+			builder.command().add( "-jar" );
+		} else {
+			builder.command().add( "-cp" );
+		}
+		builder.command().add( runtimeBean.getClassPath() );
+		if( !jar ) builder.command().add( getClass().getName() );
+
+		// Add the STDIN flag to pass the parameters.
+		builder.command().add( UpdaterFlag.STDIN );
+
+		try {
+			OperatingSystem.elevateProcessBuilder( getCard().getName(), builder );
+			Process process = builder.start();
+			PrintStream output = new PrintStream( process.getOutputStream() );
+			output.println( UpdaterFlag.ELEVATED );
+			output.println( UpdaterFlag.UPDATE );
+			for( String value : parameters.getValues( UpdaterFlag.UPDATE ) ) {
+				output.println( value );
+			}
+			output.close();
+		} catch( IOException exception ) {
+			Log.write( exception );
+		}
 	}
 
 	private void update() {
@@ -241,14 +285,7 @@ public final class Program implements Product {
 		Log.write( Log.HELP, "Java version: " + System.getProperty( "java.version" ) );
 		Log.write( Log.HELP, "Java home: " + System.getProperty( "java.home" ) );
 		Log.write( Log.HELP, "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
-		Log.write( Log.HELP, "OS name: "
-			+ OperatingSystem.getName()
-			+ "  version: "
-			+ OperatingSystem.getVersion()
-			+ "  arch: "
-			+ OperatingSystem.getSystemArchitecture()
-			+ "  family: "
-			+ OperatingSystem.getFamily() );
+		Log.write( Log.HELP, "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
 	}
 
 	private void printHelp() {
