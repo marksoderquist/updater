@@ -211,6 +211,10 @@ public final class Updater implements Product {
 				output.println( value );
 			}
 			output.close();
+			
+			process.waitFor();
+		} catch( InterruptedException exception ) {
+			Log.write( exception );
 		} catch( IOException exception ) {
 			Log.write( exception );
 		}
