@@ -83,8 +83,6 @@ public final class Updater implements Product {
 				return;
 			}
 			
-			Log.write( Log.DEVEL, "Sdtin: " + parameters.toString() );
-
 			boolean isElevated = parameters.isTrue( UpdaterFlag.ELEVATED );
 
 			if( !isElevated ) {
@@ -159,6 +157,8 @@ public final class Updater implements Product {
 					launchTasks.add( new ProcessLaunchTask( this, values, workFolder, launchElevated ) );
 				}
 			}
+
+			if( stdin ) Log.write( Log.DEVEL, "Sdtin: " + parameters.toString() );
 
 			process();
 		} catch( Throwable throwable ) {
