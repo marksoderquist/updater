@@ -153,8 +153,7 @@ public final class Updater implements Product {
 				if( parameters.isSet( UpdaterFlag.LAUNCH ) ) {
 					List<String> values = parameters.getValues( UpdaterFlag.LAUNCH );
 					String workFolder = parameters.get( UpdaterFlag.LAUNCH_HOME );
-					boolean launchElevated = parameters.isSet( UpdaterFlag.LAUNCH_ELEVATED );
-					launchTasks.add( new ProcessLaunchTask( this, values, workFolder, launchElevated ) );
+					launchTasks.add( new ProcessLaunchTask( values, workFolder ) );
 				}
 			}
 
@@ -203,6 +202,7 @@ public final class Updater implements Product {
 
 		try {
 			OperatingSystem.elevateProcessBuilder( getCard().getName(), builder );
+			Log.write( Log.INFO, "Launching update: " + TextUtil.toString( builder.command(), " " ) );
 			Process process = builder.start();
 			PrintStream output = new PrintStream( process.getOutputStream() );
 			output.println( UpdaterFlag.ELEVATED );
