@@ -12,10 +12,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.FileHandler;
 
-import com.parallelsymmetry.utility.ConsoleLogger;
 import com.parallelsymmetry.utility.Descriptor;
 import com.parallelsymmetry.utility.IoUtil;
-import com.parallelsymmetry.utility.JavaUtil;
 import com.parallelsymmetry.utility.OperatingSystem;
 import com.parallelsymmetry.utility.Parameters;
 import com.parallelsymmetry.utility.TextUtil;
@@ -37,6 +35,10 @@ import com.parallelsymmetry.utility.product.ProductCard;
  */
 
 public final class Updater implements Product {
+
+	private static final String ELEV_EXTENSION = ".elev";
+
+	private static final String LOG_EXTENSION = ".log";
 
 	private Parameters parameters;
 
@@ -85,9 +87,10 @@ public final class Updater implements Product {
 
 			boolean isElevated = parameters.isTrue( UpdaterFlag.ELEVATED );
 
-			//if( !isElevated ) {
 			Log.config( parameters );
-			if( !parameters.isSet( LogFlag.LOG_FILE ) ) {
+			if( parameters.isSet( LogFlag.LOG_FILE ) ) {
+				logFilePattern = parameters.get( LogFlag.LOG_FILE );
+			} else {
 				try {
 					File folder = getDataFolder();
 					folder.mkdirs();
@@ -110,7 +113,6 @@ public final class Updater implements Product {
 					Log.write( exception );
 				}
 			}
-			//}
 
 			describe();
 
@@ -181,7 +183,7 @@ public final class Updater implements Product {
 
 	private void updateElevated() {
 		// Use current command parameters to start an elevated process.
-		ProcessBuilder builder = new ProcessBuilder( "java" );
+		ProcessBuilder builder = new ProcessBuilder( OperatingSystem.getJavaExecutableName() );
 		builder.directory( new File( System.getProperty( "user.dir" ) ) );
 
 		// Add the VM parameters to the commands.
@@ -194,44 +196,40 @@ public final class Updater implements Product {
 		builder.command().add( "-jar" );
 		builder.command().add( runtimeBean.getClassPath() );
 
+		// Set the log file.
+		builder.command().add( "-log.file" );
+		builder.command().add( getElevatedLogFile() );
+
 		// Add the updates.
 		builder.command().add( UpdaterFlag.UPDATE );
 		for( String value : parameters.getValues( UpdaterFlag.UPDATE ) ) {
 			builder.command().add( value );
 		}
 
-		//		// Add the STDIN flag to pass the parameters.
-		//		builder.command().add( UpdaterFlag.STDIN );
-		//
-		//		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		//		PrintStream output = new PrintStream( buffer );
-		//		output.println( UpdaterFlag.ELEVATED );
-		//		output.println( UpdaterFlag.UPDATE );
-		//		for( String value : parameters.getValues( UpdaterFlag.UPDATE ) ) {
-		//			output.println( value );
-		//		}
-		//		output.close();
-		//
-		//		Log.write( Log.INFO, "Elevating: ", TextUtil.toString( builder.command(), " " ) );
-		//		Log.write( Log.INFO, buffer.toString() );
-
 		try {
 			OperatingSystem.elevateProcessBuilder( getCard().getName(), builder );
 			Log.write( Log.INFO, "Launching update: " + TextUtil.toString( builder.command(), " " ) );
 			Process process = builder.start();
-
-			// Start the console logger.
-			new ConsoleLogger( process ).start();
-
-			//			process.getOutputStream().write( buffer.toByteArray() );
-			//			process.getOutputStream().close();
-
 			process.waitFor();
 		} catch( InterruptedException exception ) {
 			Log.write( exception );
 		} catch( IOException exception ) {
 			Log.write( exception );
 		}
+	}
+	
+	private String getElevatedLogFile() {
+		File logFile = new File( logFilePattern );
+		File folder = logFile.getParentFile();
+		String name = logFile.getName();
+
+		if( name.endsWith( LOG_EXTENSION )){
+			name = name.substring( 0, name.length()-LOG_EXTENSION.length() ) + ELEV_EXTENSION + LOG_EXTENSION;
+		} else {
+			name += ELEV_EXTENSION;
+		}
+		
+		return new File( folder, name).getAbsolutePath();
 	}
 
 	private void update() {
