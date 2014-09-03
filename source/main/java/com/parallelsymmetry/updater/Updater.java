@@ -86,14 +86,19 @@ public final class Updater implements Product {
 
 			boolean isElevated = parameters.isTrue( UpdaterFlag.ELEVATED );
 
-			if( !isElevated ) {
+			//if( !isElevated ) {
 				Log.config( parameters );
 				if( !parameters.isSet( LogFlag.LOG_FILE ) ) {
 					try {
 						File folder = getDataFolder();
 						folder.mkdirs();
 
-						logFilePattern = new File( folder, "updater.log" ).getCanonicalPath();
+						StringBuilder pattern = new StringBuilder( folder.getCanonicalPath() );
+						pattern.append( File.separatorChar );
+						pattern.append( "updater.%u.log" );
+
+						logFilePattern = pattern.toString();
+						
 						FileHandler handler = new FileHandler( logFilePattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
 						handler.setLevel( Log.INFO );
 						if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) ) handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
@@ -106,7 +111,7 @@ public final class Updater implements Product {
 						Log.write( exception );
 					}
 				}
-			}
+			//}
 
 			describe();
 
@@ -211,7 +216,7 @@ public final class Updater implements Product {
 		}
 		output.close();
 
-		Log.write( Log.INFO, "Elevating: ", TextUtil.toString( builder.command(), " " ), buffer.toString().replace( '\n', ' ' ) );
+		Log.write( Log.INFO, "Elevating: ", TextUtil.toString( builder.command(), " " ), " ", buffer.toString() );
 
 		try {
 			OperatingSystem.elevateProcessBuilder( getCard().getName(), builder );
