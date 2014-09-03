@@ -1,9 +1,7 @@
 package com.parallelsymmetry.updater;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.URI;
@@ -16,7 +14,6 @@ import java.util.logging.FileHandler;
 
 import com.parallelsymmetry.utility.ConsoleLogger;
 import com.parallelsymmetry.utility.Descriptor;
-import com.parallelsymmetry.utility.IoPump;
 import com.parallelsymmetry.utility.IoUtil;
 import com.parallelsymmetry.utility.JavaUtil;
 import com.parallelsymmetry.utility.OperatingSystem;
@@ -205,31 +202,37 @@ public final class Updater implements Product {
 		builder.command().add( runtimeBean.getClassPath() );
 		if( !jar ) builder.command().add( getClass().getName() );
 
-		// Add the STDIN flag to pass the parameters.
-		builder.command().add( UpdaterFlag.STDIN );
-
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		PrintStream output = new PrintStream( buffer );
-		output.println( UpdaterFlag.ELEVATED );
-		output.println( UpdaterFlag.UPDATE );
+		// Add the updates.
+		builder.command().add( UpdaterFlag.UPDATE );
 		for( String value : parameters.getValues( UpdaterFlag.UPDATE ) ) {
-			output.println( value );
+			builder.command().add( value );
 		}
-		output.close();
 
-		Log.write( Log.INFO, "Elevating: ", TextUtil.toString( builder.command(), " " ) );
-		Log.write( Log.INFO, buffer.toString() );
+		//		// Add the STDIN flag to pass the parameters.
+		//		builder.command().add( UpdaterFlag.STDIN );
+		//
+		//		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		//		PrintStream output = new PrintStream( buffer );
+		//		output.println( UpdaterFlag.ELEVATED );
+		//		output.println( UpdaterFlag.UPDATE );
+		//		for( String value : parameters.getValues( UpdaterFlag.UPDATE ) ) {
+		//			output.println( value );
+		//		}
+		//		output.close();
+		//
+		//		Log.write( Log.INFO, "Elevating: ", TextUtil.toString( builder.command(), " " ) );
+		//		Log.write( Log.INFO, buffer.toString() );
 
 		try {
 			OperatingSystem.elevateProcessBuilder( getCard().getName(), builder );
 			Log.write( Log.INFO, "Launching update: " + TextUtil.toString( builder.command(), " " ) );
 			Process process = builder.start();
-			
+
 			// Start the console logger.
 			new ConsoleLogger( process ).start();
 
-			process.getOutputStream().write( buffer.toByteArray() );
-			process.getOutputStream().close();
+			//			process.getOutputStream().write( buffer.toByteArray() );
+			//			process.getOutputStream().close();
 
 			process.waitFor();
 		} catch( InterruptedException exception ) {
