@@ -14,7 +14,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.FileHandler;
 
+import com.parallelsymmetry.utility.ConsoleLogger;
 import com.parallelsymmetry.utility.Descriptor;
+import com.parallelsymmetry.utility.IoPump;
 import com.parallelsymmetry.utility.IoUtil;
 import com.parallelsymmetry.utility.JavaUtil;
 import com.parallelsymmetry.utility.OperatingSystem;
@@ -95,7 +97,7 @@ public final class Updater implements Product {
 
 					StringBuilder pattern = new StringBuilder( folder.getCanonicalPath() );
 					pattern.append( File.separatorChar );
-					pattern.append( "updater.%u.log" );
+					pattern.append( "updater.log" );
 
 					logFilePattern = pattern.toString();
 
@@ -222,15 +224,11 @@ public final class Updater implements Product {
 			OperatingSystem.elevateProcessBuilder( getCard().getName(), builder );
 			Log.write( Log.INFO, "Launching update: " + TextUtil.toString( builder.command(), " " ) );
 			Process process = builder.start();
+			
+			// Start the console logger.
+			new ConsoleLogger( process ).start();
 
 			process.getOutputStream().write( buffer.toByteArray() );
-			//			PrintStream output = new PrintStream( process.getOutputStream() );
-			//			output.println( UpdaterFlag.ELEVATED );
-			//			output.println( UpdaterFlag.UPDATE );
-			//			for( String value : parameters.getValues( UpdaterFlag.UPDATE ) ) {
-			//				output.println( value );
-			//			}
-			//			output.close();
 			process.getOutputStream().close();
 
 			process.waitFor();
@@ -316,7 +314,14 @@ public final class Updater implements Product {
 		Log.write( Log.HELP, "Java version: " + System.getProperty( "java.version" ) );
 		Log.write( Log.HELP, "Java home: " + System.getProperty( "java.home" ) );
 		Log.write( Log.HELP, "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
-		Log.write( Log.HELP, "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
+		Log.write( Log.HELP, "OS name: "
+			+ OperatingSystem.getName()
+			+ "  version: "
+			+ OperatingSystem.getVersion()
+			+ "  arch: "
+			+ OperatingSystem.getSystemArchitecture()
+			+ "  family: "
+			+ OperatingSystem.getFamily() );
 	}
 
 	private void printHelp() {
