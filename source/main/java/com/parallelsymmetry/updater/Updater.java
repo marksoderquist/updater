@@ -180,9 +180,8 @@ public final class Updater implements Product {
 	}
 
 	private void updateElevated() {
-		//Log.write( Log.DEVEL, "Launch updates with elevated privileges." );
 		// Use current command parameters to start an elevated process.
-		ProcessBuilder builder = new ProcessBuilder( OperatingSystem.isWindows() ? "javaw" : "java" );
+		ProcessBuilder builder = new ProcessBuilder( "java" );
 		builder.directory( new File( System.getProperty( "user.dir" ) ) );
 
 		// Add the VM parameters to the commands.
@@ -192,15 +191,8 @@ public final class Updater implements Product {
 		}
 
 		// Add the classpath information.
-		List<URI> classpath = JavaUtil.getClasspath();
-		boolean jar = classpath.size() == 1 && classpath.get( 0 ).getPath().endsWith( ".jar" );
-		if( jar ) {
-			builder.command().add( "-jar" );
-		} else {
-			builder.command().add( "-cp" );
-		}
+		builder.command().add( "-jar" );
 		builder.command().add( runtimeBean.getClassPath() );
-		if( !jar ) builder.command().add( getClass().getName() );
 
 		// Add the updates.
 		builder.command().add( UpdaterFlag.UPDATE );
