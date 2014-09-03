@@ -1,5 +1,6 @@
 package com.parallelsymmetry.updater;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -82,30 +83,35 @@ public final class Updater implements Product {
 				printHelp();
 				return;
 			}
-			
+
 			boolean isElevated = parameters.isTrue( UpdaterFlag.ELEVATED );
 
-			if( !isElevated ) {
-				Log.config( parameters );
-				if( !parameters.isSet( LogFlag.LOG_FILE ) ) {
-					try {
-						File folder = getDataFolder();
-						folder.mkdirs();
+			//if( !isElevated ) {
+			Log.config( parameters );
+			if( !parameters.isSet( LogFlag.LOG_FILE ) ) {
+				try {
+					File folder = getDataFolder();
+					folder.mkdirs();
 
-						logFilePattern = new File( folder, "updater.log" ).getCanonicalPath();
-						FileHandler handler = new FileHandler( logFilePattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
-						handler.setLevel( Log.INFO );
-						if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) ) handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
+					StringBuilder pattern = new StringBuilder( folder.getCanonicalPath() );
+					pattern.append( File.separatorChar );
+					pattern.append( "updater.%u.log" );
 
-						DefaultFormatter formatter = new DefaultFormatter();
-						formatter.setShowDate( true );
-						handler.setFormatter( formatter );
-						Log.addHandler( handler );
-					} catch( IOException exception ) {
-						Log.write( exception );
-					}
+					logFilePattern = pattern.toString();
+
+					FileHandler handler = new FileHandler( logFilePattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
+					handler.setLevel( Log.INFO );
+					if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) ) handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
+
+					DefaultFormatter formatter = new DefaultFormatter();
+					formatter.setShowDate( true );
+					handler.setFormatter( formatter );
+					Log.addHandler( handler );
+				} catch( IOException exception ) {
+					Log.write( exception );
 				}
 			}
+			//}
 
 			describe();
 
@@ -200,18 +206,33 @@ public final class Updater implements Product {
 		// Add the STDIN flag to pass the parameters.
 		builder.command().add( UpdaterFlag.STDIN );
 
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		PrintStream output = new PrintStream( buffer );
+		output.println( UpdaterFlag.ELEVATED );
+		output.println( UpdaterFlag.UPDATE );
+		for( String value : parameters.getValues( UpdaterFlag.UPDATE ) ) {
+			output.println( value );
+		}
+		output.close();
+
+		Log.write( Log.INFO, "Elevating: ", TextUtil.toString( builder.command(), " " ) );
+		Log.write( Log.INFO, buffer.toString() );
+
 		try {
 			OperatingSystem.elevateProcessBuilder( getCard().getName(), builder );
 			Log.write( Log.INFO, "Launching update: " + TextUtil.toString( builder.command(), " " ) );
 			Process process = builder.start();
-			PrintStream output = new PrintStream( process.getOutputStream() );
-			output.println( UpdaterFlag.ELEVATED );
-			output.println( UpdaterFlag.UPDATE );
-			for( String value : parameters.getValues( UpdaterFlag.UPDATE ) ) {
-				output.println( value );
-			}
-			output.close();
-			
+
+			process.getOutputStream().write( buffer.toByteArray() );
+			//			PrintStream output = new PrintStream( process.getOutputStream() );
+			//			output.println( UpdaterFlag.ELEVATED );
+			//			output.println( UpdaterFlag.UPDATE );
+			//			for( String value : parameters.getValues( UpdaterFlag.UPDATE ) ) {
+			//				output.println( value );
+			//			}
+			//			output.close();
+			process.getOutputStream().close();
+
 			process.waitFor();
 		} catch( InterruptedException exception ) {
 			Log.write( exception );
