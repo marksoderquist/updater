@@ -208,7 +208,7 @@ public final class Updater implements Product {
 
 		try {
 			OperatingSystem.elevateProcessBuilder( getCard().getName(), builder );
-			Log.write( Log.INFO, "Launching update: " + TextUtil.toString( builder.command(), " " ) );
+			Log.write( Log.INFO, "Elevated update: " + TextUtil.toString( builder.command(), " " ) );
 			Process process = builder.start();
 			process.waitFor();
 		} catch( InterruptedException exception ) {
