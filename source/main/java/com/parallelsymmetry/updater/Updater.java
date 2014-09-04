@@ -173,17 +173,6 @@ public final class Updater implements Product {
 	}
 
 	private void process() {
-		// Pause if an update delay is set.
-		if( parameters.isSet( UpdaterFlag.UPDATE ) && parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
-			String delayValue = parameters.get( UpdaterFlag.UPDATE_DELAY );
-			Log.write( "Update delay: ", delayValue, "ms" );
-			try {
-				ThreadUtil.pause( Long.parseLong( delayValue ) );
-			} catch( NumberFormatException exception ) {
-				Log.write( exception );
-			}
-		}
-
 		if( needsElevation ) {
 			updateElevated();
 		} else {
@@ -208,8 +197,14 @@ public final class Updater implements Product {
 		builder.command().add( runtimeBean.getClassPath() );
 
 		// Set the log file.
-		builder.command().add( "-log.file" );
+		builder.command().add( LogFlag.LOG_FILE );
 		builder.command().add( getElevatedLogFile() );
+
+		// Add the update delay flag.
+		if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
+			builder.command().add( UpdaterFlag.UPDATE_DELAY );
+			builder.command().add( parameters.get( UpdaterFlag.UPDATE_DELAY ) );
+		}
 
 		// Add the updates.
 		builder.command().add( UpdaterFlag.UPDATE );
@@ -245,6 +240,17 @@ public final class Updater implements Product {
 	}
 
 	private void update() {
+		// Pause if an update delay is set.
+		if( parameters.isSet( UpdaterFlag.UPDATE ) && parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
+			String delayValue = parameters.get( UpdaterFlag.UPDATE_DELAY );
+			Log.write( "Update delay: ", delayValue, "ms" );
+			try {
+				ThreadUtil.pause( Long.parseLong( delayValue ) );
+			} catch( NumberFormatException exception ) {
+				Log.write( exception );
+			}
+		}
+
 		// Execute the update tasks.
 		for( UpdateTask task : updateTasks ) {
 			try {
