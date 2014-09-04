@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
@@ -51,6 +54,8 @@ public final class Updater implements Product {
 	private List<LaunchTask> launchTasks;
 
 	private boolean needsElevation;
+
+	private ServerSocket server;
 
 	public Updater() {
 		describe();
@@ -174,14 +179,16 @@ public final class Updater implements Product {
 
 	private void process() {
 		if( needsElevation ) {
-			updateElevated();
+			int port = setupForCallback();
+			updateElevated( port );
+			waitForCallback( port );
 		} else {
 			update();
 		}
 		launch();
 	}
 
-	private void updateElevated() {
+	private void updateElevated( int port ) {
 		// Use current command parameters to start an elevated process.
 		ProcessBuilder builder = new ProcessBuilder( OperatingSystem.getJavaExecutableName() );
 		builder.directory( new File( System.getProperty( "user.dir" ) ) );
@@ -199,6 +206,10 @@ public final class Updater implements Product {
 		// Set the log file.
 		builder.command().add( LogFlag.LOG_FILE );
 		builder.command().add( getElevatedLogFile() );
+
+		// Add the callback port flag.
+		builder.command().add( UpdaterFlag.CALLBACK );
+		builder.command().add( String.valueOf( port ) );
 
 		// Add the update delay flag.
 		if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
@@ -239,6 +250,26 @@ public final class Updater implements Product {
 		return new File( folder, name ).getAbsolutePath();
 	}
 
+	private int setupForCallback() {
+		try {
+			server = new ServerSocket( 0, 1, InetAddress.getLoopbackAddress() );
+		} catch( IOException exception ) {
+			Log.write( exception );
+		}
+
+		int port = server.getLocalPort();
+		Log.write( Log.TRACE, "Set up for callback on port: ", port );
+		return port;
+	}
+
+	private void waitForCallback( int port ) {
+		try {
+			server.accept();
+		} catch( IOException exception ) {
+			Log.write( exception );
+		}
+	}
+
 	private void update() {
 		// Pause if an update delay is set.
 		if( parameters.isSet( UpdaterFlag.UPDATE ) && parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
@@ -257,6 +288,32 @@ public final class Updater implements Product {
 				task.execute();
 			} catch( Throwable throwable ) {
 				Log.write( throwable );
+			}
+		}
+
+		// Callback to the parent process.
+		if( parameters.isSet( UpdaterFlag.CALLBACK ) ) {
+			String portString = parameters.get( UpdaterFlag.CALLBACK );
+			int port = -1;
+			try {
+				port = Integer.parseInt( portString );
+			} catch( NumberFormatException exception ) {
+				Log.write( exception );
+			}
+			if( port > 0 && port < 65536 ) {
+				Log.write( Log.TRACE, "Callback to parent updater on port: ", port );
+				Socket socket = null;
+				try {
+					socket = new Socket( InetAddress.getLoopbackAddress(), port );
+				} catch( IOException exception ) {
+					Log.write( exception );
+				} finally {
+					try {
+						if( socket != null ) socket.close();
+					} catch( IOException exception ) {
+						Log.write( exception );
+					}
+				}
 			}
 		}
 	}

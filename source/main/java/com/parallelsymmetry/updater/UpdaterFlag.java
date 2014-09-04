@@ -4,6 +4,8 @@ import com.parallelsymmetry.utility.CommonFlag;
 
 public interface UpdaterFlag extends CommonFlag {
 	
+	public static final String CALLBACK = "-callback";
+	
 	public static final String ELEVATED = "-elevated";
 
 	public static final String LAUNCH = "--launch";
