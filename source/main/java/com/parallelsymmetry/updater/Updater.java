@@ -211,25 +211,26 @@ public final class Updater implements Product {
 			Log.write( Log.INFO, "Elevated update: " + TextUtil.toString( builder.command(), " " ) );
 			Process process = builder.start();
 			process.waitFor();
+			Log.write( Log.INFO, "Elevated update complete." );
 		} catch( InterruptedException exception ) {
 			Log.write( exception );
 		} catch( IOException exception ) {
 			Log.write( exception );
 		}
 	}
-	
+
 	private String getElevatedLogFile() {
 		File logFile = new File( logFilePattern );
 		File folder = logFile.getParentFile();
 		String name = logFile.getName();
 
-		if( name.endsWith( LOG_EXTENSION )){
-			name = name.substring( 0, name.length()-LOG_EXTENSION.length() ) + ELEV_EXTENSION + LOG_EXTENSION;
+		if( name.endsWith( LOG_EXTENSION ) ) {
+			name = name.substring( 0, name.length() - LOG_EXTENSION.length() ) + ELEV_EXTENSION + LOG_EXTENSION;
 		} else {
 			name += ELEV_EXTENSION;
 		}
-		
-		return new File( folder, name).getAbsolutePath();
+
+		return new File( folder, name ).getAbsolutePath();
 	}
 
 	private void update() {
@@ -307,14 +308,7 @@ public final class Updater implements Product {
 		Log.write( Log.HELP, "Java version: " + System.getProperty( "java.version" ) );
 		Log.write( Log.HELP, "Java home: " + System.getProperty( "java.home" ) );
 		Log.write( Log.HELP, "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
-		Log.write( Log.HELP, "OS name: "
-			+ OperatingSystem.getName()
-			+ "  version: "
-			+ OperatingSystem.getVersion()
-			+ "  arch: "
-			+ OperatingSystem.getSystemArchitecture()
-			+ "  family: "
-			+ OperatingSystem.getFamily() );
+		Log.write( Log.HELP, "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
 	}
 
 	private void printHelp() {
