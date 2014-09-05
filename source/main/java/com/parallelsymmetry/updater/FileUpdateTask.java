@@ -19,12 +19,15 @@ public class FileUpdateTask implements UpdateTask {
 	private static final String DEL_SUFFIX = ".del";
 
 	private static final String ADD_SUFFIX = ".add";
+	
+	private Updater updater;
 
 	private File source;
 
 	private File target;
 
-	public FileUpdateTask( File source, File target ) {
+	public FileUpdateTask( Updater updater, File source, File target ) {
+		this.updater = updater;
 		this.source = source;
 		this.target = target;
 	}
@@ -57,6 +60,8 @@ public class FileUpdateTask implements UpdateTask {
 		//source.renameTo( new File( source.getAbsolutePath() + ".old" ) );
 
 		Log.write( "Successful update: " + source );
+		
+		updater.incrementProgress();
 	}
 
 	private void stage( File source, File target ) throws IOException {

@@ -26,6 +26,7 @@ import com.parallelsymmetry.utility.log.Log;
 import com.parallelsymmetry.utility.log.LogFlag;
 import com.parallelsymmetry.utility.product.Product;
 import com.parallelsymmetry.utility.product.ProductCard;
+import com.parallelsymmetry.utility.ui.SwingUtil;
 
 /**
  * The Updater class is the entry point for the Updater application.
@@ -57,6 +58,8 @@ public final class Updater implements Product {
 
 	private ServerSocket server;
 
+	private UpdaterFrame frame;
+
 	public Updater() {
 		describe();
 	}
@@ -77,20 +80,14 @@ public final class Updater implements Product {
 
 	public void call( String[] commands ) {
 		try {
-			boolean stdin = false;
 			try {
 				parameters = Parameters.parse( commands );
-				if( parameters.isSet( UpdaterFlag.STDIN ) ) {
-					parameters = Parameters.parse( IoUtil.loadAsLineArray( System.in, TextUtil.DEFAULT_ENCODING ) );
-					stdin = true;
-				}
+				if( parameters.isSet( UpdaterFlag.STDIN ) ) parameters = Parameters.parse( IoUtil.loadAsLineArray( System.in, TextUtil.DEFAULT_ENCODING ) );
 			} catch( InvalidParameterException exception ) {
 				Log.write( Log.ERROR, exception.getMessage() );
 				printHelp();
 				return;
 			}
-
-			boolean isElevated = parameters.isTrue( UpdaterFlag.ELEVATED );
 
 			Log.config( parameters );
 			if( parameters.isSet( LogFlag.LOG_FILE ) ) {
@@ -123,6 +120,8 @@ public final class Updater implements Product {
 
 			printHeader();
 
+			boolean isElevated = parameters.isTrue( UpdaterFlag.ELEVATED );
+
 			if( !isElevated ) {
 				if( parameters.size() == 0 || parameters.isTrue( UpdaterFlag.WHAT ) || parameters.isTrue( UpdaterFlag.HELP ) ) {
 					printHelp();
@@ -150,7 +149,7 @@ public final class Updater implements Product {
 						if( index + 1 < count ) target = files.get( index + 1 );
 						if( source == null ) throw new IllegalArgumentException( "Source parameter not specified." );
 						if( target == null ) throw new IllegalArgumentException( "Target parameter not specified." );
-						FileUpdateTask task = new FileUpdateTask( new File( source ).getCanonicalFile(), new File( target ).getCanonicalFile() );
+						FileUpdateTask task = new FileUpdateTask( this, new File( source ).getCanonicalFile(), new File( target ).getCanonicalFile() );
 						updateTasks.add( task );
 						needsElevation |= task.needsElevation();
 						index += 2;
@@ -169,7 +168,10 @@ public final class Updater implements Product {
 				}
 			}
 
-			if( stdin ) Log.write( Log.DEVEL, "Sdtin: " + parameters.toString() );
+			if( parameters.isSet( UpdaterFlag.UI ) ) {
+				frame = new UpdaterFrame();
+				if( parameters.isSet( UpdaterFlag.UI_MESSAGE ) ) frame.setMessage( parameters.get( UpdaterFlag.UI_MESSAGE ) );
+			}
 
 			process();
 		} catch( Throwable throwable ) {
@@ -177,15 +179,30 @@ public final class Updater implements Product {
 		}
 	}
 
+	public void incrementProgress() {
+		if( frame != null ) frame.setProgress( frame.getProgress() + 1 );
+	}
+
 	private void process() {
-		if( needsElevation ) {
-			int port = setupForCallback();
-			updateElevated( port );
-			waitForCallback( port );
-		} else {
-			update();
+		if( frame != null ) {
+			frame.setProgressMin( updateTasks.size() );
+			SwingUtil.center( frame );
+			frame.setVisible( true );
 		}
-		launch();
+
+		try {
+			if( needsElevation ) {
+				int port = setupForCallback();
+				updateElevated( port );
+				waitForCallback( port );
+				frame.setProgress( updateTasks.size() );
+			} else {
+				update();
+			}
+			launch();
+		} finally {
+			if( frame != null ) frame.dispose();
+		}
 	}
 
 	private void updateElevated( int port ) {
@@ -371,7 +388,14 @@ public final class Updater implements Product {
 		Log.write( Log.HELP, "Java version: " + System.getProperty( "java.version" ) );
 		Log.write( Log.HELP, "Java home: " + System.getProperty( "java.home" ) );
 		Log.write( Log.HELP, "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
-		Log.write( Log.HELP, "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
+		Log.write( Log.HELP, "OS name: "
+			+ OperatingSystem.getName()
+			+ "  version: "
+			+ OperatingSystem.getVersion()
+			+ "  arch: "
+			+ OperatingSystem.getSystemArchitecture()
+			+ "  family: "
+			+ OperatingSystem.getFamily() );
 	}
 
 	private void printHelp() {
