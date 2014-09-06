@@ -1,7 +1,9 @@
 package com.parallelsymmetry.updater;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.InetAddress;
@@ -309,14 +311,24 @@ public final class Updater implements Product {
 		boolean found = true;
 		while( found ) {
 			Socket socket = null;
+			String data = String.valueOf( System.currentTimeMillis() );
 			try {
+				// Open the socket.
 				socket = new Socket();
 				socket.setSoTimeout( timeout );
 				socket.connect( new InetSocketAddress( InetAddress.getLoopbackAddress(), port ), timeout );
-				IoUtil.save( String.valueOf( System.currentTimeMillis() ), socket.getOutputStream() );
-				socket.getOutputStream().close();
-				String echo = IoUtil.load( socket.getInputStream() );
-				Log.write( Log.TRACE, "Echo: ", echo );
+
+				// Write the current time.
+				socket.getOutputStream().write( data.getBytes( TextUtil.DEFAULT_CHARSET ) );
+				socket.getOutputStream().write( '\n' );
+				socket.getOutputStream().flush();
+				
+				// Read the response.
+				BufferedReader reader = new BufferedReader( new InputStreamReader( socket.getInputStream(), TextUtil.DEFAULT_CHARSET ) );
+				String echo = reader.readLine();
+				Log.write( Log.DEBUG, "Echo: ", echo );
+
+				// Program is still running so pause.
 				ThreadUtil.pause( timeout );
 			} catch( SocketTimeoutException exception ) {
 				return;
