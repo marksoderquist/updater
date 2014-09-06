@@ -206,16 +206,16 @@ public final class Updater implements Product {
 
 	private void process() {
 		try {
-			if( window != null ) showWindow();
 
 			if( needsElevation ) {
 				// Launch an elevated updater.
 				int port = setupForCallback();
 				updateElevated( port );
+				if( window != null ) showWindow();
 				waitForCallback( port );
-				if( window != null ) window.setProgress( updateTasks.size() );
 			} else {
 				// Run the update tasks.
+				if( window != null ) showWindow();
 				runUpdateTasks();
 			}
 
@@ -316,6 +316,7 @@ public final class Updater implements Product {
 
 		while( !DONE.equals( message ) ) {
 			try {
+				// FIXME This could end up waiting forever.
 				socket = server.accept();
 				socket.setSoTimeout( CALLBACK_TIMEOUT );
 
