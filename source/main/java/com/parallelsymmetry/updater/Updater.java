@@ -10,7 +10,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
@@ -48,7 +47,7 @@ public final class Updater implements Product {
 
 	private static final String ELEV_EXTENSION = ".elev";
 
-	private static final int ECHO_WAIT_TIMEOUT = 5000;
+	private static final int CALLBACK_TIMEOUT = 200;
 
 	private Parameters parameters;
 
@@ -66,12 +65,14 @@ public final class Updater implements Product {
 
 	private UpdaterWindow window;
 
-	public Updater() {
-		describe();
-	}
+	private int callbackPort = -1;
 
 	public static final void main( String[] commands ) {
 		new Updater().call( commands );
+	}
+
+	public Updater() {
+		describe();
 	}
 
 	@Override
@@ -138,6 +139,16 @@ public final class Updater implements Product {
 				}
 			}
 
+			if( parameters.isSet( UpdaterFlag.CALLBACK ) ) {
+				String callbackPortString = parameters.get( UpdaterFlag.CALLBACK );
+				try {
+					callbackPort = Integer.parseInt( callbackPortString );
+				} catch( NumberFormatException exception ) {
+					Log.write( exception );
+				}
+				Log.write( Log.INFO, "Callback on port: ", callbackPort );
+			}
+
 			updateTasks = new ArrayList<UpdateTask>();
 			if( parameters.isSet( UpdaterFlag.UPDATE ) ) {
 				List<String> files = parameters.getValues( UpdaterFlag.UPDATE );
@@ -190,40 +201,35 @@ public final class Updater implements Product {
 	}
 
 	private void process() {
-		if( window != null ) {
-			window.setProgressMax( updateTasks.size() );
-			window.setSize( 400, 50 );
-
-			if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) window.setMessage( "Waiting for program to stop..." );
-
-			SwingUtil.center( window );
-			window.setVisible( true );
-		}
-
-		if( parameters.isSet( UpdaterFlag.ECHOPORT ) ) {
-			String portString = parameters.get( UpdaterFlag.ECHOPORT );
-			int port = -1;
-			try {
-				port = Integer.parseInt( portString );
-			} catch( NumberFormatException exception ) {
-				Log.write( exception );
-			}
-			if( port > 0 && port < 65536 ) waitForEchoStop( port );
-		}
-
 		try {
+			if( window != null ) showWindow();
+
 			if( needsElevation ) {
+				// Launch an elevated updater.
 				int port = setupForCallback();
 				updateElevated( port );
 				waitForCallback( port );
-				window.setProgress( updateTasks.size() );
+				if( window != null ) window.setProgress( updateTasks.size() );
 			} else {
-				update();
+				// Run the update tasks.
+				runUpdateTasks();
 			}
-			launch();
+
+			// Run the launch tasks.
+			runLaunchTasks();
 		} finally {
 			if( window != null ) window.dispose();
 		}
+	}
+
+	private void showWindow() {
+		window.setProgressMax( updateTasks.size() );
+		window.setSize( 400, 50 );
+
+		if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) window.setMessage( "Waiting for program to stop..." );
+
+		SwingUtil.center( window );
+		window.setVisible( true );
 	}
 
 	private void updateElevated( int port ) {
@@ -301,61 +307,52 @@ public final class Updater implements Product {
 	}
 
 	private void waitForCallback( int port ) {
-		try {
-			server.accept();
-		} catch( IOException exception ) {
-			Log.write( exception );
+		Socket socket = null;
+		String message = null;
+
+		while( !"done".equals( message ) ) {
+			try {
+				socket = server.accept();
+				socket.setSoTimeout( CALLBACK_TIMEOUT );
+
+				// Read the response.
+				BufferedReader reader = new BufferedReader( new InputStreamReader( socket.getInputStream(), TextUtil.DEFAULT_CHARSET ) );
+				message = reader.readLine();
+			} catch( IOException exception ) {
+				Log.write( exception );
+			}
 		}
 	}
 
-	private void waitForEchoStop( int port ) {
-		int timeout = 100;
-		boolean found = true;
-		long start = System.currentTimeMillis();
-		try {
-			while( found ) {
-				Socket socket = null;
-				String data = String.valueOf( System.currentTimeMillis() );
+	private void callback( String message ) {
+		int port = callbackPort;
+	
+		// Callback to the parent process.
+		if( port > 0 && port < 65536 ) {
+			Socket socket = null;
+			try {
+				// Open the socket.
+				socket = new Socket();
+				socket.setSoTimeout( CALLBACK_TIMEOUT );
+				socket.connect( new InetSocketAddress( InetAddress.getByName( "127.0.0.1" ), port ), CALLBACK_TIMEOUT );
+	
+				// Write the current time.
+				socket.getOutputStream().write( message.getBytes( TextUtil.DEFAULT_CHARSET ) );
+				socket.getOutputStream().write( '\n' );
+				socket.getOutputStream().flush();
+			} catch( IOException exception ) {
+				Log.write( exception );
+			} finally {
 				try {
-					// Open the socket.
-					socket = new Socket();
-					socket.setSoTimeout( timeout );
-					socket.connect( new InetSocketAddress( InetAddress.getByName( "127.0.0.1" ), port ), timeout );
-
-					// Write the current time.
-					socket.getOutputStream().write( data.getBytes( TextUtil.DEFAULT_CHARSET ) );
-					socket.getOutputStream().write( '\n' );
-					socket.getOutputStream().flush();
-
-					// Read the response.
-					BufferedReader reader = new BufferedReader( new InputStreamReader( socket.getInputStream(), TextUtil.DEFAULT_CHARSET ) );
-					String echo = reader.readLine();
-					Log.write( Log.DEBUG, "Echo: ", echo );
-
-					// Program is still running so pause.
-					ThreadUtil.pause( timeout );
-				} catch( SocketTimeoutException exception ) {
-					return;
+					if( socket != null ) socket.close();
 				} catch( IOException exception ) {
 					Log.write( exception );
-				} finally {
-					try {
-						if( socket != null ) socket.close();
-					} catch( IOException exception ) {
-						Log.write( exception );
-					}
-					if( System.currentTimeMillis() - start > ECHO_WAIT_TIMEOUT ) {
-						Log.write( Log.WARN, "Program did not stop in ", ECHO_WAIT_TIMEOUT, "ms. No longer waiting." );
-						return;
-					}
 				}
 			}
-		} finally {
-			Log.write( "Waited for program to stop: ", System.currentTimeMillis() - start, "ms" );
 		}
 	}
 
-	private void update() {
+	private void runUpdateTasks() {
 		// Pause if an update delay is set.
 		if( parameters.isSet( UpdaterFlag.UPDATE ) && parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
 			String delayValue = parameters.get( UpdaterFlag.UPDATE_DELAY );
@@ -371,39 +368,16 @@ public final class Updater implements Product {
 		for( UpdateTask task : updateTasks ) {
 			try {
 				task.execute();
+				callback( "update" );
 			} catch( Throwable throwable ) {
 				Log.write( throwable );
 			}
 		}
 
-		// Callback to the parent process.
-		if( parameters.isSet( UpdaterFlag.CALLBACK ) ) {
-			String portString = parameters.get( UpdaterFlag.CALLBACK );
-			int port = -1;
-			try {
-				port = Integer.parseInt( portString );
-			} catch( NumberFormatException exception ) {
-				Log.write( exception );
-			}
-			if( port > 0 && port < 65536 ) {
-				Log.write( Log.TRACE, "Callback to parent updater on port: ", port );
-				Socket socket = null;
-				try {
-					socket = new Socket( InetAddress.getByName( "127.0.0.1" ), port );
-				} catch( IOException exception ) {
-					Log.write( exception );
-				} finally {
-					try {
-						if( socket != null ) socket.close();
-					} catch( IOException exception ) {
-						Log.write( exception );
-					}
-				}
-			}
-		}
+		callback( "done" );
 	}
 
-	private void launch() {
+	private void runLaunchTasks() {
 		// Pause if a launch delay is set.
 		if( parameters.isSet( UpdaterFlag.LAUNCH_DELAY ) ) {
 			String delayValue = parameters.get( UpdaterFlag.LAUNCH_DELAY );
