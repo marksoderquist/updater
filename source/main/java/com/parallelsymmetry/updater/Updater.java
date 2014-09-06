@@ -40,9 +40,9 @@ import com.parallelsymmetry.utility.ui.SwingUtil;
 
 public final class Updater implements Product {
 
-	private static final String ELEV_EXTENSION = ".elev";
-
 	private static final String LOG_EXTENSION = ".log";
+
+	private static final String ELEV_EXTENSION = ".elev";
 
 	private Parameters parameters;
 
@@ -185,7 +185,8 @@ public final class Updater implements Product {
 
 	private void process() {
 		if( frame != null ) {
-			frame.setProgressMin( updateTasks.size() );
+			frame.setProgressMax( updateTasks.size() );
+			frame.setSize( 400, 200 );
 			SwingUtil.center( frame );
 			frame.setVisible( true );
 		}
