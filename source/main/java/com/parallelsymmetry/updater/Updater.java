@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
@@ -187,8 +189,22 @@ public final class Updater implements Product {
 		if( window != null ) {
 			window.setProgressMax( updateTasks.size() );
 			window.setSize( 400, 50 );
+
+			if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) window.setMessage( "Waiting for program to stop..." );
+
 			SwingUtil.center( window );
 			window.setVisible( true );
+		}
+
+		if( parameters.isSet( UpdaterFlag.ECHOPORT ) ) {
+			String portString = parameters.get( UpdaterFlag.ECHOPORT );
+			int port = -1;
+			try {
+				port = Integer.parseInt( portString );
+			} catch( NumberFormatException exception ) {
+				Log.write( exception );
+			}
+			if( port > 0 && port < 65536 ) waitForEchoStop( port );
 		}
 
 		try {
@@ -285,6 +301,29 @@ public final class Updater implements Product {
 			server.accept();
 		} catch( IOException exception ) {
 			Log.write( exception );
+		}
+	}
+
+	private void waitForEchoStop( int port ) {
+		boolean found = true;
+		while( found ) {
+			Socket socket = null;
+			try {
+				socket = new Socket();
+				socket.connect( new InetSocketAddress( InetAddress.getLoopbackAddress(), port ), 50 );
+				String echo = IoUtil.load( socket.getInputStream() );
+				Log.write( Log.TRACE, "Echo: ", echo );
+			} catch( SocketTimeoutException exception ) {
+				return;
+			} catch( IOException exception ) {
+				Log.write( exception );
+			} finally {
+				try {
+					if( socket != null ) socket.close();
+				} catch( IOException exception ) {
+					Log.write( exception );
+				}
+			}
 		}
 	}
 
@@ -389,14 +428,7 @@ public final class Updater implements Product {
 		Log.write( Log.HELP, "Java version: " + System.getProperty( "java.version" ) );
 		Log.write( Log.HELP, "Java home: " + System.getProperty( "java.home" ) );
 		Log.write( Log.HELP, "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
-		Log.write( Log.HELP, "OS name: "
-			+ OperatingSystem.getName()
-			+ "  version: "
-			+ OperatingSystem.getVersion()
-			+ "  arch: "
-			+ OperatingSystem.getSystemArchitecture()
-			+ "  family: "
-			+ OperatingSystem.getFamily() );
+		Log.write( Log.HELP, "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
 	}
 
 	private void printHelp() {
