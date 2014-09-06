@@ -48,6 +48,8 @@ public final class Updater implements Product {
 
 	private static final String ELEV_EXTENSION = ".elev";
 
+	private static final int ECHO_WAIT_TIMEOUT = 10000;
+
 	private Parameters parameters;
 
 	private ProductCard card;
@@ -341,6 +343,10 @@ public final class Updater implements Product {
 						if( socket != null ) socket.close();
 					} catch( IOException exception ) {
 						Log.write( exception );
+					}
+					if( System.currentTimeMillis() - start > ECHO_WAIT_TIMEOUT ) {
+						Log.write( Log.WARN, "Program did not stop in ", ECHO_WAIT_TIMEOUT, "ms. No longer waiting." );
+						return;
 					}
 				}
 			}
