@@ -288,7 +288,7 @@ public final class Updater implements Product {
 
 	private int setupForCallback() {
 		try {
-			server = new ServerSocket( 0, 1, InetAddress.getLoopbackAddress() );
+			server = new ServerSocket( 0, 1, InetAddress.getByName( "127.0.0.1" ) );
 		} catch( IOException exception ) {
 			Log.write( exception );
 		}
@@ -318,7 +318,7 @@ public final class Updater implements Product {
 					// Open the socket.
 					socket = new Socket();
 					socket.setSoTimeout( timeout );
-					socket.connect( new InetSocketAddress( InetAddress.getLoopbackAddress(), port ), timeout );
+					socket.connect( new InetSocketAddress( InetAddress.getByName( "127.0.0.1" ), port ), timeout );
 
 					// Write the current time.
 					socket.getOutputStream().write( data.getBytes( TextUtil.DEFAULT_CHARSET ) );
@@ -383,7 +383,7 @@ public final class Updater implements Product {
 				Log.write( Log.TRACE, "Callback to parent updater on port: ", port );
 				Socket socket = null;
 				try {
-					socket = new Socket( InetAddress.getLoopbackAddress(), port );
+					socket = new Socket( InetAddress.getByName( "127.0.0.1" ), port );
 				} catch( IOException exception ) {
 					Log.write( exception );
 				} finally {
