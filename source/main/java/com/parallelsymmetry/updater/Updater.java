@@ -48,7 +48,7 @@ public final class Updater implements Product {
 
 	private static final String ELEV_EXTENSION = ".elev";
 
-	private static final int ECHO_WAIT_TIMEOUT = 10000;
+	private static final int ECHO_WAIT_TIMEOUT = 5000;
 
 	private Parameters parameters;
 
