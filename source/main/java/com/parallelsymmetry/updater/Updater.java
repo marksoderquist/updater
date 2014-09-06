@@ -305,14 +305,19 @@ public final class Updater implements Product {
 	}
 
 	private void waitForEchoStop( int port ) {
+		int timeout = 100;
 		boolean found = true;
 		while( found ) {
 			Socket socket = null;
 			try {
 				socket = new Socket();
-				socket.connect( new InetSocketAddress( InetAddress.getLoopbackAddress(), port ), 50 );
+				socket.setSoTimeout( timeout );
+				socket.connect( new InetSocketAddress( InetAddress.getLoopbackAddress(), port ), timeout );
+				IoUtil.save( String.valueOf( System.currentTimeMillis() ), socket.getOutputStream() );
+				socket.getOutputStream().close();
 				String echo = IoUtil.load( socket.getInputStream() );
 				Log.write( Log.TRACE, "Echo: ", echo );
+				ThreadUtil.pause( timeout );
 			} catch( SocketTimeoutException exception ) {
 				return;
 			} catch( IOException exception ) {
