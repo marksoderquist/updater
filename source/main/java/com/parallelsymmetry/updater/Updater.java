@@ -309,38 +309,43 @@ public final class Updater implements Product {
 	private void waitForEchoStop( int port ) {
 		int timeout = 100;
 		boolean found = true;
-		while( found ) {
-			Socket socket = null;
-			String data = String.valueOf( System.currentTimeMillis() );
-			try {
-				// Open the socket.
-				socket = new Socket();
-				socket.setSoTimeout( timeout );
-				socket.connect( new InetSocketAddress( InetAddress.getLoopbackAddress(), port ), timeout );
-
-				// Write the current time.
-				socket.getOutputStream().write( data.getBytes( TextUtil.DEFAULT_CHARSET ) );
-				socket.getOutputStream().write( '\n' );
-				socket.getOutputStream().flush();
-				
-				// Read the response.
-				BufferedReader reader = new BufferedReader( new InputStreamReader( socket.getInputStream(), TextUtil.DEFAULT_CHARSET ) );
-				String echo = reader.readLine();
-				Log.write( Log.DEBUG, "Echo: ", echo );
-
-				// Program is still running so pause.
-				ThreadUtil.pause( timeout );
-			} catch( SocketTimeoutException exception ) {
-				return;
-			} catch( IOException exception ) {
-				Log.write( exception );
-			} finally {
+		long start = System.currentTimeMillis();
+		try {
+			while( found ) {
+				Socket socket = null;
+				String data = String.valueOf( System.currentTimeMillis() );
 				try {
-					if( socket != null ) socket.close();
+					// Open the socket.
+					socket = new Socket();
+					socket.setSoTimeout( timeout );
+					socket.connect( new InetSocketAddress( InetAddress.getLoopbackAddress(), port ), timeout );
+
+					// Write the current time.
+					socket.getOutputStream().write( data.getBytes( TextUtil.DEFAULT_CHARSET ) );
+					socket.getOutputStream().write( '\n' );
+					socket.getOutputStream().flush();
+
+					// Read the response.
+					BufferedReader reader = new BufferedReader( new InputStreamReader( socket.getInputStream(), TextUtil.DEFAULT_CHARSET ) );
+					String echo = reader.readLine();
+					Log.write( Log.DEBUG, "Echo: ", echo );
+
+					// Program is still running so pause.
+					ThreadUtil.pause( timeout );
+				} catch( SocketTimeoutException exception ) {
+					return;
 				} catch( IOException exception ) {
 					Log.write( exception );
+				} finally {
+					try {
+						if( socket != null ) socket.close();
+					} catch( IOException exception ) {
+						Log.write( exception );
+					}
 				}
 			}
+		} finally {
+			Log.write( "Waited for program to stop: ", System.currentTimeMillis() - start, "ms" );
 		}
 	}
 
