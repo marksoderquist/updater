@@ -3,11 +3,9 @@ package com.parallelsymmetry.updater;
 import com.parallelsymmetry.utility.FileUtil;
 
 public class FileUpdaterTaskTest extends BaseTestCase {
-	
+
 	public void testExecute() throws Throwable {
-		Updater updater = new Updater();
-		
-		new FileUpdateTask( updater, update1, target ).execute();
+		new FileUpdateTask( update1, target ).execute();
 		assertEquals( "Sample 1 Version 1", FileUtil.load( sample1 ).trim() );
 		assertEquals( "Sample 2 Version 1", FileUtil.load( sample2 ).trim() );
 		assertTrue( folder1.exists() );
@@ -17,7 +15,7 @@ public class FileUpdaterTaskTest extends BaseTestCase {
 		assertEquals( "File 2.1 Version 1", FileUtil.load( file2_1 ).trim() );
 		assertEquals( "File 2.2 Version 1", FileUtil.load( file2_2 ).trim() );
 
-		new FileUpdateTask( updater, update2, target ).execute();
+		new FileUpdateTask( update2, target ).execute();
 		assertEquals( "Sample 1 Version 2", FileUtil.load( sample1 ).trim() );
 		assertEquals( "Sample 2 Version 2", FileUtil.load( sample2 ).trim() );
 		assertTrue( folder1.exists() );

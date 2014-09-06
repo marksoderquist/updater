@@ -43,11 +43,15 @@ import com.parallelsymmetry.utility.ui.SwingUtil;
 
 public final class Updater implements Product {
 
+	private static final int CALLBACK_TIMEOUT = 200;
+
+	private static final String UPDATE = "update";
+
+	private static final String DONE = "done";
+
 	private static final String LOG_EXTENSION = ".log";
 
 	private static final String ELEV_EXTENSION = ".elev";
-
-	private static final int CALLBACK_TIMEOUT = 200;
 
 	private Parameters parameters;
 
@@ -166,7 +170,7 @@ public final class Updater implements Product {
 						if( index + 1 < count ) target = files.get( index + 1 );
 						if( source == null ) throw new IllegalArgumentException( "Source parameter not specified." );
 						if( target == null ) throw new IllegalArgumentException( "Target parameter not specified." );
-						FileUpdateTask task = new FileUpdateTask( this, new File( source ).getCanonicalFile(), new File( target ).getCanonicalFile() );
+						FileUpdateTask task = new FileUpdateTask( new File( source ).getCanonicalFile(), new File( target ).getCanonicalFile() );
 						updateTasks.add( task );
 						needsElevation |= task.needsElevation();
 						index += 2;
@@ -310,7 +314,7 @@ public final class Updater implements Product {
 		Socket socket = null;
 		String message = null;
 
-		while( !"done".equals( message ) ) {
+		while( !DONE.equals( message ) ) {
 			try {
 				socket = server.accept();
 				socket.setSoTimeout( CALLBACK_TIMEOUT );
@@ -318,6 +322,8 @@ public final class Updater implements Product {
 				// Read the response.
 				BufferedReader reader = new BufferedReader( new InputStreamReader( socket.getInputStream(), TextUtil.DEFAULT_CHARSET ) );
 				message = reader.readLine();
+
+				if( UPDATE.equals( message ) ) incrementProgress();
 			} catch( IOException exception ) {
 				Log.write( exception );
 			}
@@ -326,7 +332,7 @@ public final class Updater implements Product {
 
 	private void callback( String message ) {
 		int port = callbackPort;
-	
+
 		// Callback to the parent process.
 		if( port > 0 && port < 65536 ) {
 			Socket socket = null;
@@ -335,7 +341,7 @@ public final class Updater implements Product {
 				socket = new Socket();
 				socket.setSoTimeout( CALLBACK_TIMEOUT );
 				socket.connect( new InetSocketAddress( InetAddress.getByName( "127.0.0.1" ), port ), CALLBACK_TIMEOUT );
-	
+
 				// Write the current time.
 				socket.getOutputStream().write( message.getBytes( TextUtil.DEFAULT_CHARSET ) );
 				socket.getOutputStream().write( '\n' );
@@ -368,13 +374,14 @@ public final class Updater implements Product {
 		for( UpdateTask task : updateTasks ) {
 			try {
 				task.execute();
-				callback( "update" );
+				incrementProgress();
+				callback( UPDATE );
 			} catch( Throwable throwable ) {
 				Log.write( throwable );
 			}
 		}
 
-		callback( "done" );
+		callback( DONE );
 	}
 
 	private void runLaunchTasks() {
