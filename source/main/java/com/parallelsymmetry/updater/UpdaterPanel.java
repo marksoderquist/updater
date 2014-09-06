@@ -27,7 +27,7 @@ public class UpdaterPanel extends JPanel {
 		setBorder( new EmptyBorder( PAD, PAD, PAD, PAD ) );
 		
 		add( message, BorderLayout.NORTH );
-		add( progress, BorderLayout.CENTER );
+		add( progress, BorderLayout.SOUTH );
 	}
 
 	public void setMessage( String message ) {

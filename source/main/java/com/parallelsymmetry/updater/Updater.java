@@ -58,7 +58,7 @@ public final class Updater implements Product {
 
 	private ServerSocket server;
 
-	private UpdaterFrame frame;
+	private UpdaterWindow window;
 
 	public Updater() {
 		describe();
@@ -169,8 +169,8 @@ public final class Updater implements Product {
 			}
 
 			if( parameters.isSet( UpdaterFlag.UI ) ) {
-				frame = new UpdaterFrame();
-				if( parameters.isSet( UpdaterFlag.UI_MESSAGE ) ) frame.setMessage( parameters.get( UpdaterFlag.UI_MESSAGE ) );
+				window = new UpdaterWindow();
+				if( parameters.isSet( UpdaterFlag.UI_MESSAGE ) ) window.setMessage( parameters.get( UpdaterFlag.UI_MESSAGE ) );
 			}
 
 			process();
@@ -180,15 +180,15 @@ public final class Updater implements Product {
 	}
 
 	public void incrementProgress() {
-		if( frame != null ) frame.setProgress( frame.getProgress() + 1 );
+		if( window != null ) window.setProgress( window.getProgress() + 1 );
 	}
 
 	private void process() {
-		if( frame != null ) {
-			frame.setProgressMax( updateTasks.size() );
-			frame.setSize( 400, 200 );
-			SwingUtil.center( frame );
-			frame.setVisible( true );
+		if( window != null ) {
+			window.setProgressMax( updateTasks.size() );
+			window.setSize( 400, 50 );
+			SwingUtil.center( window );
+			window.setVisible( true );
 		}
 
 		try {
@@ -196,13 +196,13 @@ public final class Updater implements Product {
 				int port = setupForCallback();
 				updateElevated( port );
 				waitForCallback( port );
-				frame.setProgress( updateTasks.size() );
+				window.setProgress( updateTasks.size() );
 			} else {
 				update();
 			}
 			launch();
 		} finally {
-			if( frame != null ) frame.dispose();
+			if( window != null ) window.dispose();
 		}
 	}
 

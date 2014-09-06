@@ -3,16 +3,17 @@ package com.parallelsymmetry.updater;
 import java.awt.BorderLayout;
 
 import javax.swing.JFrame;
+import javax.swing.JWindow;
 
 import com.parallelsymmetry.utility.ui.SwingUtil;
 
-public class UpdaterFrame extends JFrame {
+public class UpdaterWindow extends JWindow {
 
 	private static final long serialVersionUID = -4240269349153296803L;
 
 	private UpdaterPanel updaterPanel;
 
-	public UpdaterFrame() {
+	public UpdaterWindow() {
 		updaterPanel = new UpdaterPanel();
 		add( updaterPanel, BorderLayout.CENTER );
 	}
@@ -38,15 +39,16 @@ public class UpdaterFrame extends JFrame {
 	}
 
 	public static final void main( String[] commands ) {
-		UpdaterFrame frame = new UpdaterFrame();
-		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+		UpdaterWindow window = new UpdaterWindow();
 
-		frame.setMessage( "Updating Program..." );
-		frame.setProgress( 25 );
+		window.setMessage( "Updating Program..." );
+		window.setProgress( 25 );
 
-		frame.pack();
-		SwingUtil.center( frame );
-		frame.setVisible( true );
+		window.setSize( 300, 50 );
+		window.setAlwaysOnTop( true );
+
+		SwingUtil.center( window );
+		window.setVisible( true );
 	}
 
 }
