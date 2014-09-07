@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
@@ -42,6 +43,8 @@ import com.parallelsymmetry.utility.ui.SwingUtil;
  */
 
 public final class Updater implements Product {
+
+	private static final int ACCEPT_TIMEOUT = 5000;
 
 	private static final int CALLBACK_TIMEOUT = 200;
 
@@ -301,12 +304,13 @@ public final class Updater implements Product {
 	private int setupForCallback() {
 		try {
 			server = new ServerSocket( 0, 1, InetAddress.getByName( "127.0.0.1" ) );
+			server.setSoTimeout( ACCEPT_TIMEOUT );
 		} catch( IOException exception ) {
 			Log.write( exception );
 		}
 
 		int port = server.getLocalPort();
-		Log.write( Log.TRACE, "Set up for callback on port: ", port );
+		Log.write( Log.INFO, "Set up for callback on port: ", port );
 		return port;
 	}
 
@@ -316,7 +320,6 @@ public final class Updater implements Product {
 
 		while( !DONE.equals( message ) ) {
 			try {
-				// FIXME This could end up waiting forever.
 				socket = server.accept();
 				socket.setSoTimeout( CALLBACK_TIMEOUT );
 
@@ -327,6 +330,7 @@ public final class Updater implements Product {
 				if( UPDATE.equals( message ) ) incrementProgress();
 			} catch( IOException exception ) {
 				Log.write( exception );
+				return;
 			}
 		}
 	}
