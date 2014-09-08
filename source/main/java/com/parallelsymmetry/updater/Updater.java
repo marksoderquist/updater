@@ -208,7 +208,6 @@ public final class Updater implements Product {
 
 	private void process() {
 		try {
-
 			if( needsElevation ) {
 				// Launch an elevated updater.
 				int port = setupForCallback();
