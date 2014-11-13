@@ -132,7 +132,7 @@ public class UpdaterTest extends BaseTestCase {
 		handler.setLevel( level );
 		Log.addHandler( handler );
 
-		try {	 
+		try {
 			service.call( commands );
 		} finally {
 			Log.removeHandler( handler );
@@ -169,14 +169,7 @@ public class UpdaterTest extends BaseTestCase {
 		assertEquals( "Java version: " + System.getProperty( "java.version" ), parser.next() );
 		assertEquals( "Java home: " + System.getProperty( "java.home" ), parser.next() );
 		assertEquals( "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset(), parser.next() );
-		assertEquals( "OS name: "
-			+ OperatingSystem.getName()
-			+ "  version: "
-			+ OperatingSystem.getVersion()
-			+ "  arch: "
-			+ OperatingSystem.getSystemArchitecture()
-			+ "  family: "
-			+ OperatingSystem.getFamily(), parser.next() );
+		assertEquals( "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily(), parser.next() );
 		assertEquals( "", parser.next() );
 	}
 

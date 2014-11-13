@@ -441,14 +441,7 @@ public final class Updater implements Product {
 		Log.write( Log.HELP, "Java version: " + System.getProperty( "java.version" ) );
 		Log.write( Log.HELP, "Java home: " + System.getProperty( "java.home" ) );
 		Log.write( Log.HELP, "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset() );
-		Log.write( Log.HELP, "OS name: "
-			+ OperatingSystem.getName()
-			+ "  version: "
-			+ OperatingSystem.getVersion()
-			+ "  arch: "
-			+ OperatingSystem.getSystemArchitecture()
-			+ "  family: "
-			+ OperatingSystem.getFamily() );
+		Log.write( Log.HELP, "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily() );
 	}
 
 	private void printHelp() {

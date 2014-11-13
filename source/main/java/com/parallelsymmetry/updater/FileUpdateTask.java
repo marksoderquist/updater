@@ -19,7 +19,7 @@ public class FileUpdateTask implements UpdateTask {
 	private static final String DEL_SUFFIX = ".del";
 
 	private static final String ADD_SUFFIX = ".add";
-	
+
 	private File source;
 
 	private File target;
@@ -68,8 +68,7 @@ public class FileUpdateTask implements UpdateTask {
 			Enumeration<? extends ZipEntry> entries = zip.entries();
 			while( entries.hasMoreElements() ) {
 				ZipEntry entry = entries.nextElement();
-				if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: "
-					+ new File( target, entry.getName() ) );
+				if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: " + new File( target, entry.getName() ) );
 			}
 		} finally {
 			if( zip != null ) zip.close();

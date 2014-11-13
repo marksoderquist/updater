@@ -25,7 +25,7 @@ public class UpdaterPanel extends JPanel {
 
 		setLayout( new BorderLayout( PAD, PAD ) );
 		setBorder( new EmptyBorder( PAD, PAD, PAD, PAD ) );
-		
+
 		add( message, BorderLayout.NORTH );
 		add( progress, BorderLayout.SOUTH );
 	}
@@ -41,11 +41,11 @@ public class UpdaterPanel extends JPanel {
 	public void setProgressMax( int max ) {
 		progress.setMaximum( max );
 	}
-	
+
 	public void setProgress( int value ) {
 		progress.setValue( value );
 	}
-	
+
 	public int getProgress() {
 		return progress.getValue();
 	}
