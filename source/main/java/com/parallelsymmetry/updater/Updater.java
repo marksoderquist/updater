@@ -240,7 +240,7 @@ public final class Updater implements Product {
 
 	private void updateElevated( int port ) {
 		// Use current command parameters to start an elevated process.
-		ProcessBuilder builder = new ProcessBuilder( OperatingSystem.getJavaExecutableName() );
+		ProcessBuilder builder = new ProcessBuilder( OperatingSystem.getJavaExecutablePath() );
 		builder.directory( new File( System.getProperty( "user.dir" ) ) );
 
 		// Add the VM parameters to the commands.
