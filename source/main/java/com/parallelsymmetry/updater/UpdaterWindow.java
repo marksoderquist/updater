@@ -1,12 +1,14 @@
 package com.parallelsymmetry.updater;
 
 import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
-import javax.swing.JWindow;
+import javax.swing.JDialog;
 
 import com.parallelsymmetry.utility.ui.SwingUtil;
 
-public class UpdaterWindow extends JWindow {
+public class UpdaterWindow extends JDialog implements KeyListener {
 
 	private static final long serialVersionUID = -4240269349153296803L;
 
@@ -15,10 +17,13 @@ public class UpdaterWindow extends JWindow {
 	public UpdaterWindow() {
 		updaterPanel = new UpdaterPanel();
 		add( updaterPanel, BorderLayout.CENTER );
+		addKeyListener( this );
+		pack();
 	}
 
 	public void setMessage( String message ) {
 		updaterPanel.setMessage( message );
+		pack();
 	}
 
 	public int getProgress() {
@@ -41,13 +46,23 @@ public class UpdaterWindow extends JWindow {
 		UpdaterWindow window = new UpdaterWindow();
 
 		window.setMessage( "Updating Program..." );
-		window.setProgress( 25 );
-
-		window.setSize( 300, 50 );
 		window.setAlwaysOnTop( true );
+		window.setProgress( 33 );
 
 		SwingUtil.center( window );
 		window.setVisible( true );
+		window.requestFocus();
 	}
+
+	@Override
+	public void keyPressed( KeyEvent event ) {
+		if( event.getKeyCode() == KeyEvent.VK_ESCAPE ) dispose();
+	}
+
+	@Override
+	public void keyReleased( KeyEvent event ) {}
+
+	@Override
+	public void keyTyped( KeyEvent event ) {}
 
 }

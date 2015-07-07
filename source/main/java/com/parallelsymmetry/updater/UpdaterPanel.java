@@ -1,6 +1,7 @@
 package com.parallelsymmetry.updater;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -26,7 +27,7 @@ public class UpdaterPanel extends JPanel {
 		setLayout( new BorderLayout( PAD, PAD ) );
 		setBorder( new EmptyBorder( PAD, PAD, PAD, PAD ) );
 
-		add( message, BorderLayout.NORTH );
+		add( message, BorderLayout.CENTER );
 		add( progress, BorderLayout.SOUTH );
 	}
 
@@ -48,6 +49,12 @@ public class UpdaterPanel extends JPanel {
 
 	public int getProgress() {
 		return progress.getValue();
+	}
+
+	public Dimension getPreferredSize() {
+		Dimension size = super.getPreferredSize();
+		size.width *= 2;
+		return size;
 	}
 
 }
