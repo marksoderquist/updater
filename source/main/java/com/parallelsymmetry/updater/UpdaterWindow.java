@@ -43,12 +43,12 @@ public class UpdaterWindow extends JDialog implements KeyListener {
 	}
 
 	public static final void main( String[] commands ) {
-		UpdaterWindow window = new UpdaterWindow();
+		//		Updater.main( new String[] { UpdaterFlag.UI, "true", UpdaterFlag.UI_MESSAGE, "Hello World!" } );
 
+		UpdaterWindow window = new UpdaterWindow();
 		window.setMessage( "Updating Program..." );
 		window.setAlwaysOnTop( true );
 		window.setProgress( 33 );
-
 		SwingUtil.center( window );
 		window.setVisible( true );
 		window.requestFocus();

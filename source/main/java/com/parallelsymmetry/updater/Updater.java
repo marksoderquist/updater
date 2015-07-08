@@ -191,10 +191,7 @@ public final class Updater implements Product {
 				}
 			}
 
-			if( parameters.isSet( UpdaterFlag.UI ) ) {
-				window = new UpdaterWindow();
-				if( parameters.isSet( UpdaterFlag.UI_MESSAGE ) ) window.setMessage( parameters.get( UpdaterFlag.UI_MESSAGE ) );
-			}
+			if( parameters.isSet( UpdaterFlag.UI ) ) window = new UpdaterWindow();
 
 			process();
 		} catch( Throwable throwable ) {
@@ -231,9 +228,6 @@ public final class Updater implements Product {
 	private void showWindow() {
 		window.setProgressMax( updateTasks.size() );
 		window.setSize( 400, 50 );
-
-		if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) window.setMessage( "Waiting for program to stop..." );
-
 		SwingUtil.center( window );
 		window.setVisible( true );
 	}
@@ -364,15 +358,18 @@ public final class Updater implements Product {
 
 	private void runUpdateTasks() {
 		// Pause if an update delay is set.
-		if( parameters.isSet( UpdaterFlag.UPDATE ) && parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
+		if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
 			String delayValue = parameters.get( UpdaterFlag.UPDATE_DELAY );
 			Log.write( "Update delay: ", delayValue, "ms" );
 			try {
+				window.setMessage( "Waiting for program to stop..." );
 				ThreadUtil.pause( Long.parseLong( delayValue ) );
 			} catch( NumberFormatException exception ) {
 				Log.write( exception );
 			}
 		}
+
+		if( window != null && parameters.isSet( UpdaterFlag.UI_MESSAGE ) ) window.setMessage( parameters.get( UpdaterFlag.UI_MESSAGE ) );
 
 		// Execute the update tasks.
 		for( UpdateTask task : updateTasks ) {
