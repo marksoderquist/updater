@@ -3,12 +3,13 @@ package com.parallelsymmetry.updater;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.border.EmptyBorder;
 
-public class UpdaterPanel extends JPanel {
+public class UpdaterPanel extends Box {
 
 	private static final long serialVersionUID = -733636367053486845L;
 
@@ -19,16 +20,22 @@ public class UpdaterPanel extends JPanel {
 	private JProgressBar progress;
 
 	public UpdaterPanel() {
-		message = new JLabel();
-		progress = new JProgressBar();
+		super( BoxLayout.Y_AXIS );
 
+		message = new JLabel();
+		message.setAlignmentX( 0.5f );
 		message.setHorizontalAlignment( JLabel.CENTER );
 
-		setLayout( new BorderLayout( PAD, PAD ) );
+		progress = new JProgressBar();
+		progress.setAlignmentX( 0.5f );
+
 		setBorder( new EmptyBorder( PAD, PAD, PAD, PAD ) );
 
+		add( Box.createVerticalGlue() );
 		add( message, BorderLayout.CENTER );
+		add( Box.createVerticalStrut( PAD ) );
 		add( progress, BorderLayout.SOUTH );
+		add( Box.createVerticalGlue() );
 	}
 
 	public void setMessage( String message ) {
@@ -50,11 +57,17 @@ public class UpdaterPanel extends JPanel {
 	public int getProgress() {
 		return progress.getValue();
 	}
+	
+	public Dimension getMinimumSize() {
+		Dimension messageSize = message.getPreferredSize();
+		Dimension progressSize = progress.getPreferredSize();
+		return new Dimension( Math.max( messageSize.width, progressSize.width ), 3 * PAD + messageSize.height + progressSize.height );
+	}
 
 	public Dimension getPreferredSize() {
-		Dimension size = super.getPreferredSize();
-		size.width *= 2;
-		return size;
+		Dimension messageSize = message.getPreferredSize();
+		Dimension progressSize = progress.getPreferredSize();
+		return new Dimension( Math.max( messageSize.width, progressSize.width ) * 2, 3 * PAD + messageSize.height + progressSize.height );
 	}
 
 }
