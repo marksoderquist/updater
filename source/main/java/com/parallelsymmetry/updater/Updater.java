@@ -184,7 +184,7 @@ public final class Updater implements Product {
 
 			if( parameters.isSet( UpdaterFlag.UI ) ) {
 				window = new UpdaterWindow();
-				window.setMessage( card.getName() + " " + card.getRelease().getVersion().toHumanString() );
+				window.setMessage( card.getName() );
 			}
 
 			process();
