@@ -28,7 +28,7 @@ import java.util.logging.FileHandler;
  * The updater does not need to be started as an elevated process. If there is a
  * need to have elevated privileges to perform any update tasks a new process
  * will be started with elevated privileges to perform those updates.
- * 
+ *
  * @author SoderquistMV
  */
 
@@ -182,7 +182,10 @@ public final class Updater implements Product {
 				}
 			}
 
-			if( parameters.isSet( UpdaterFlag.UI ) ) window = new UpdaterWindow();
+			if( parameters.isSet( UpdaterFlag.UI ) ) {
+				window = new UpdaterWindow();
+				window.setMessage( card.getName() + " " + card.getRelease().getVersion().toHumanString() );
+			}
 
 			process();
 		} catch( Throwable throwable ) {
