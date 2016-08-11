@@ -1,35 +1,26 @@
 package com.parallelsymmetry.updater;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.logging.FileHandler;
-
-import com.parallelsymmetry.utility.Descriptor;
-import com.parallelsymmetry.utility.IoUtil;
-import com.parallelsymmetry.utility.OperatingSystem;
-import com.parallelsymmetry.utility.Parameters;
-import com.parallelsymmetry.utility.TextUtil;
-import com.parallelsymmetry.utility.ThreadUtil;
+import com.parallelsymmetry.utility.*;
 import com.parallelsymmetry.utility.log.DefaultFormatter;
 import com.parallelsymmetry.utility.log.Log;
 import com.parallelsymmetry.utility.log.LogFlag;
 import com.parallelsymmetry.utility.product.Product;
 import com.parallelsymmetry.utility.product.ProductCard;
 import com.parallelsymmetry.utility.ui.SwingUtil;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.net.*;
+import java.nio.charset.Charset;
+import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.logging.FileHandler;
 
 /**
  * The Updater class is the entry point for the Updater application.
@@ -227,9 +218,10 @@ public final class Updater implements Product {
 
 	private void showWindow() {
 		window.setProgressMax( updateTasks.size() );
-		window.setSize( 400, 50 );
+		window.pack();
 		SwingUtil.center( window );
 		window.setVisible( true );
+		window.requestFocus();
 	}
 
 	private void updateElevated( int port ) {
