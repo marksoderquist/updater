@@ -1,5 +1,10 @@
 package com.parallelsymmetry.updater;
 
+import com.parallelsymmetry.utility.FileUtil;
+import com.parallelsymmetry.utility.HashUtil;
+import com.parallelsymmetry.utility.IoUtil;
+import com.parallelsymmetry.utility.log.Log;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,11 +13,6 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-
-import com.parallelsymmetry.utility.FileUtil;
-import com.parallelsymmetry.utility.HashUtil;
-import com.parallelsymmetry.utility.IoUtil;
-import com.parallelsymmetry.utility.log.Log;
 
 public class FileUpdateTask implements UpdateTask {
 
@@ -68,7 +68,8 @@ public class FileUpdateTask implements UpdateTask {
 			Enumeration<? extends ZipEntry> entries = zip.entries();
 			while( entries.hasMoreElements() ) {
 				ZipEntry entry = entries.nextElement();
-				if( !stage( zip.getInputStream( entry ), target, entry.getName() ) ) throw new RuntimeException( "Could not stage: " + new File( target, entry.getName() ) );
+				if( !stage( zip.getInputStream( entry ), target, entry.getName() ) )
+					throw new RuntimeException( "Could not stage: " + new File( target, entry.getName() ) );
 			}
 		} finally {
 			if( zip != null ) zip.close();
@@ -117,12 +118,14 @@ public class FileUpdateTask implements UpdateTask {
 				File file = FileUtil.removeExtension( target );
 				target.renameTo( file );
 				String targetHash = HashUtil.hash( file );
-				if( !targetHash.equals( sourceHash ) ) throw new RuntimeException( "Hash code mismatch commiting file: " + file );
+				if( !targetHash.equals( sourceHash ) )
+					throw new RuntimeException( "Hash code mismatch commiting file: " + file );
 				Log.write( Log.TRACE, "Commit: " + relativize( root, file ) );
 			} else if( target.getName().endsWith( DEL_SUFFIX ) ) {
 				File file = FileUtil.removeExtension( target );
 				target.delete();
-				if( !file.exists() ) Log.write( Log.TRACE, "Remove: " + relativize( root, FileUtil.removeExtension( target ) ) );
+				if( !file.exists() )
+					Log.write( Log.TRACE, "Remove: " + relativize( root, FileUtil.removeExtension( target ) ) );
 			}
 		}
 	}

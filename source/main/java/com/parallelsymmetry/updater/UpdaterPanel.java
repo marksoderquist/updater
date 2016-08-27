@@ -1,13 +1,8 @@
 package com.parallelsymmetry.updater;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
 public class UpdaterPanel extends Box {
 
@@ -50,14 +45,14 @@ public class UpdaterPanel extends Box {
 		progress.setMaximum( max );
 	}
 
+	public int getProgress() {
+		return progress.getValue();
+	}
+
 	public void setProgress( int value ) {
 		progress.setValue( value );
 	}
 
-	public int getProgress() {
-		return progress.getValue();
-	}
-	
 	public Dimension getMinimumSize() {
 		Dimension messageSize = message.getPreferredSize();
 		Dimension progressSize = progress.getPreferredSize();

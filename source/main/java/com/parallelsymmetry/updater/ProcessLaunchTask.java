@@ -1,10 +1,10 @@
 package com.parallelsymmetry.updater;
 
-import java.io.File;
-import java.util.List;
-
 import com.parallelsymmetry.utility.TextUtil;
 import com.parallelsymmetry.utility.log.Log;
+
+import java.io.File;
+import java.util.List;
 
 public class ProcessLaunchTask implements LaunchTask {
 

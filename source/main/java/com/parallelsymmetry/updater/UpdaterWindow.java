@@ -1,12 +1,11 @@
 package com.parallelsymmetry.updater;
 
-import java.awt.BorderLayout;
+import com.parallelsymmetry.utility.ui.SwingUtil;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
-import javax.swing.JDialog;
-
-import com.parallelsymmetry.utility.ui.SwingUtil;
 
 public class UpdaterWindow extends JDialog implements KeyListener {
 
@@ -19,6 +18,16 @@ public class UpdaterWindow extends JDialog implements KeyListener {
 		add( updaterPanel, BorderLayout.CENTER );
 		addKeyListener( this );
 		pack();
+	}
+
+	public static final void main( String[] commands ) {
+		UpdaterWindow window = new UpdaterWindow();
+		window.setMessage( "Updating Program..." );
+		window.setAlwaysOnTop( true );
+		window.setProgress( 33 );
+		SwingUtil.center( window );
+		window.setVisible( true );
+		window.requestFocus();
 	}
 
 	public void setMessage( String message ) {
@@ -40,16 +49,6 @@ public class UpdaterWindow extends JDialog implements KeyListener {
 
 	public void setProgressMax( int max ) {
 		updaterPanel.setProgressMax( max );
-	}
-
-	public static final void main( String[] commands ) {
-		UpdaterWindow window = new UpdaterWindow();
-		window.setMessage( "Updating Program..." );
-		window.setAlwaysOnTop( true );
-		window.setProgress( 33 );
-		SwingUtil.center( window );
-		window.setVisible( true );
-		window.requestFocus();
 	}
 
 	@Override

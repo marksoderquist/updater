@@ -2,8 +2,8 @@ package com.parallelsymmetry.updater;
 
 public interface UpdateTask {
 
-	public boolean needsElevation();
+	boolean needsElevation();
 
-	public void execute() throws Throwable;
+	void execute() throws Throwable;
 
 }

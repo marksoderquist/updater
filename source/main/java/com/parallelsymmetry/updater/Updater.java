@@ -64,12 +64,12 @@ public final class Updater implements Product {
 
 	private int callbackPort = -1;
 
-	public static final void main( String[] commands ) {
-		new Updater().call( commands );
-	}
-
 	public Updater() {
 		describe();
+	}
+
+	public static final void main( String[] commands ) {
+		new Updater().call( commands );
 	}
 
 	@Override
@@ -86,7 +86,8 @@ public final class Updater implements Product {
 		try {
 			try {
 				parameters = Parameters.parse( commands );
-				if( parameters.isSet( UpdaterFlag.STDIN ) ) parameters = Parameters.parse( IoUtil.loadAsLineArray( System.in, TextUtil.DEFAULT_ENCODING ) );
+				if( parameters.isSet( UpdaterFlag.STDIN ) )
+					parameters = Parameters.parse( IoUtil.loadAsLineArray( System.in, TextUtil.DEFAULT_ENCODING ) );
 			} catch( InvalidParameterException exception ) {
 				Log.write( Log.ERROR, exception.getMessage() );
 				printHelp();
@@ -109,7 +110,8 @@ public final class Updater implements Product {
 
 					FileHandler handler = new FileHandler( logFilePattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
 					handler.setLevel( Log.INFO );
-					if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) ) handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
+					if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) )
+						handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
 
 					DefaultFormatter formatter = new DefaultFormatter();
 					formatter.setShowDate( true );
@@ -154,7 +156,8 @@ public final class Updater implements Product {
 					int index = 0;
 					int count = files.size();
 
-					if( count == 0 || "true".equals( parameters.get( UpdaterFlag.UPDATE ) ) ) throw new IllegalArgumentException( "No update files specified." );
+					if( count == 0 || "true".equals( parameters.get( UpdaterFlag.UPDATE ) ) )
+						throw new IllegalArgumentException( "No update files specified." );
 
 					while( index < count ) {
 						String source = null;
@@ -364,7 +367,8 @@ public final class Updater implements Product {
 			}
 		}
 
-		if( window != null && parameters.isSet( UpdaterFlag.UI_MESSAGE ) ) window.setMessage( parameters.get( UpdaterFlag.UI_MESSAGE ) );
+		if( window != null && parameters.isSet( UpdaterFlag.UI_MESSAGE ) )
+			window.setMessage( parameters.get( UpdaterFlag.UI_MESSAGE ) );
 
 		// Execute the update tasks.
 		for( UpdateTask task : updateTasks ) {
