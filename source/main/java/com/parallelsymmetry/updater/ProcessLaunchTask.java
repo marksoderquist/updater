@@ -25,4 +25,9 @@ public class ProcessLaunchTask implements LaunchTask {
 		builder.start();
 	}
 
+	@Override
+	public String toString() {
+		return "Launching " + values.get(0) + " ...";
+	}
+
 }

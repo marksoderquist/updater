@@ -59,6 +59,11 @@ public class FileUpdateTask implements UpdateTask {
 		Log.write( "Successful update: " + source );
 	}
 
+	@Override
+	public String toString() {
+		return "Update " + target + " ...";
+	}
+
 	private void stage( File source, File target ) throws IOException {
 		Log.write( Log.DEBUG, "Staging: " + source.getName() + " to " + target + "..." );
 

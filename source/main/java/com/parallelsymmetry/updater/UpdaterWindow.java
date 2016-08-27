@@ -22,9 +22,14 @@ public class UpdaterWindow extends JDialog implements KeyListener {
 
 	public static final void main( String[] commands ) {
 		UpdaterWindow window = new UpdaterWindow();
-		window.setMessage( "Updating Program..." );
+		window.setDefaultCloseOperation( JDialog.DISPOSE_ON_CLOSE );
+		window.setTitle( "Perform Updater" );
+		window.setMessage( "Updating program..." );
+		window.setTask( "Copy foo.txt..." );
 		window.setAlwaysOnTop( true );
-		window.setProgress( 33 );
+		window.setProgress( 73 );
+		window.pack();
+
 		SwingUtil.center( window );
 		window.setVisible( true );
 		window.requestFocus();
@@ -32,7 +37,10 @@ public class UpdaterWindow extends JDialog implements KeyListener {
 
 	public void setMessage( String message ) {
 		updaterPanel.setMessage( message );
-		pack();
+	}
+
+	public void setTask( String task ) {
+		updaterPanel.setTask( task );
 	}
 
 	public int getProgress() {

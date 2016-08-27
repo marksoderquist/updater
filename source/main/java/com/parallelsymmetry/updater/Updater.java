@@ -86,8 +86,7 @@ public final class Updater implements Product {
 		try {
 			try {
 				parameters = Parameters.parse( commands );
-				if( parameters.isSet( UpdaterFlag.STDIN ) )
-					parameters = Parameters.parse( IoUtil.loadAsLineArray( System.in, TextUtil.DEFAULT_ENCODING ) );
+				if( parameters.isSet( UpdaterFlag.STDIN ) ) parameters = Parameters.parse( IoUtil.loadAsLineArray( System.in, TextUtil.DEFAULT_ENCODING ) );
 			} catch( InvalidParameterException exception ) {
 				Log.write( Log.ERROR, exception.getMessage() );
 				printHelp();
@@ -110,8 +109,7 @@ public final class Updater implements Product {
 
 					FileHandler handler = new FileHandler( logFilePattern, parameters.isTrue( LogFlag.LOG_FILE_APPEND ) );
 					handler.setLevel( Log.INFO );
-					if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) )
-						handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
+					if( parameters.isSet( LogFlag.LOG_FILE_LEVEL ) ) handler.setLevel( Log.parseLevel( parameters.get( LogFlag.LOG_FILE_LEVEL ) ) );
 
 					DefaultFormatter formatter = new DefaultFormatter();
 					formatter.setShowDate( true );
@@ -156,8 +154,7 @@ public final class Updater implements Product {
 					int index = 0;
 					int count = files.size();
 
-					if( count == 0 || "true".equals( parameters.get( UpdaterFlag.UPDATE ) ) )
-						throw new IllegalArgumentException( "No update files specified." );
+					if( count == 0 || "true".equals( parameters.get( UpdaterFlag.UPDATE ) ) ) throw new IllegalArgumentException( "No update files specified." );
 
 					while( index < count ) {
 						String source = null;
@@ -187,7 +184,7 @@ public final class Updater implements Product {
 
 			if( parameters.isSet( UpdaterFlag.UI ) ) {
 				window = new UpdaterWindow();
-				window.setMessage( card.getName() );
+				window.setTitle( card.getName() );
 			}
 
 			process();
@@ -355,9 +352,14 @@ public final class Updater implements Product {
 	}
 
 	private void runUpdateTasks() {
+		if( updateTasks.size() == 0 ) return;
+
+		window.setMessage( "Running update tasks..." );
+
 		// Pause if an update delay is set.
 		if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
 			String delayValue = parameters.get( UpdaterFlag.UPDATE_DELAY );
+			window.setMessage( "Update waiting " + delayValue + "ms" );
 			Log.write( "Update delay: ", delayValue, "ms" );
 			try {
 				window.setMessage( "Waiting for program to stop..." );
@@ -367,12 +369,12 @@ public final class Updater implements Product {
 			}
 		}
 
-		if( window != null && parameters.isSet( UpdaterFlag.UI_MESSAGE ) )
-			window.setMessage( parameters.get( UpdaterFlag.UI_MESSAGE ) );
+		if( parameters.isSet( UpdaterFlag.UI_MESSAGE ) ) window.setMessage( parameters.get( UpdaterFlag.UI_MESSAGE ) );
 
 		// Execute the update tasks.
 		for( UpdateTask task : updateTasks ) {
 			try {
+				window.setTask( task.toString() );
 				task.execute();
 				incrementProgress();
 				callback( UPDATE );
@@ -385,9 +387,14 @@ public final class Updater implements Product {
 	}
 
 	private void runLaunchTasks() {
+		if( launchTasks.size() == 0 ) return;
+
+		window.setMessage( "Running launch tasks..." );
+
 		// Pause if a launch delay is set.
 		if( parameters.isSet( UpdaterFlag.LAUNCH_DELAY ) ) {
 			String delayValue = parameters.get( UpdaterFlag.LAUNCH_DELAY );
+			window.setMessage( "Launch waiting " + delayValue + "ms" );
 			Log.write( "Launch delay: ", delayValue, "ms" );
 			try {
 				ThreadUtil.pause( Long.parseLong( delayValue ) );
@@ -399,6 +406,7 @@ public final class Updater implements Product {
 		// Execute the launch tasks.
 		for( LaunchTask task : launchTasks ) {
 			try {
+				window.setTask( task.toString() );
 				task.execute();
 			} catch( Throwable throwable ) {
 				Log.write( throwable );

@@ -2,6 +2,7 @@ package com.parallelsymmetry.updater;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 import java.awt.*;
 
 public class UpdaterPanel extends Box {
@@ -14,27 +15,38 @@ public class UpdaterPanel extends Box {
 
 	private JProgressBar progress;
 
+	private JLabel task;
+
 	public UpdaterPanel() {
 		super( BoxLayout.Y_AXIS );
 
 		message = new JLabel();
-		message.setAlignmentX( 0.5f );
-		message.setHorizontalAlignment( JLabel.CENTER );
+		message.setAlignmentX( 0f );
 
 		progress = new JProgressBar();
-		progress.setAlignmentX( 0.5f );
+		progress.setAlignmentX( 0f );
+
+		task = new JLabel();
+		task.setBorder( new EtchedBorder(  ) );
+		task.setFont( task.getFont().deriveFont( Font.PLAIN ) );
 
 		setBorder( new EmptyBorder( PAD, PAD, PAD, PAD ) );
 
 		add( Box.createVerticalGlue() );
-		add( message, BorderLayout.CENTER );
+		add( message );
 		add( Box.createVerticalStrut( PAD ) );
-		add( progress, BorderLayout.SOUTH );
+		add( progress );
+		add( Box.createVerticalStrut( PAD ) );
+		add( task );
 		add( Box.createVerticalGlue() );
 	}
 
 	public void setMessage( String message ) {
 		this.message.setText( message );
+	}
+
+	public void setTask( String task ) {
+		this.task.setText( task );
 	}
 
 	public void setProgressMin( int min ) {
@@ -54,15 +66,14 @@ public class UpdaterPanel extends Box {
 	}
 
 	public Dimension getMinimumSize() {
-		Dimension messageSize = message.getPreferredSize();
-		Dimension progressSize = progress.getPreferredSize();
-		return new Dimension( Math.max( messageSize.width, progressSize.width ), 3 * PAD + messageSize.height + progressSize.height );
+		return getPreferredSize();
 	}
 
 	public Dimension getPreferredSize() {
 		Dimension messageSize = message.getPreferredSize();
 		Dimension progressSize = progress.getPreferredSize();
-		return new Dimension( Math.max( messageSize.width, progressSize.width ) * 2, 3 * PAD + messageSize.height + progressSize.height );
+		Dimension taskSize = task.getPreferredSize();
+		return new Dimension( Math.max( messageSize.width, progressSize.width ) * 2, 4 * PAD + messageSize.height + progressSize.height + taskSize.height );
 	}
 
 }
