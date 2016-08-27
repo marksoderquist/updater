@@ -2,7 +2,6 @@ package com.parallelsymmetry.updater;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
 import java.awt.*;
 
 public class UpdaterPanel extends Box {
@@ -11,7 +10,7 @@ public class UpdaterPanel extends Box {
 
 	private static final int PAD = 5;
 
-	private JLabel message;
+	private JLabel step;
 
 	private JProgressBar progress;
 
@@ -20,20 +19,19 @@ public class UpdaterPanel extends Box {
 	public UpdaterPanel() {
 		super( BoxLayout.Y_AXIS );
 
-		message = new JLabel();
-		message.setAlignmentX( 0f );
+		step = new JLabel();
+		step.setAlignmentX( 0f );
 
 		progress = new JProgressBar();
 		progress.setAlignmentX( 0f );
 
 		task = new JLabel();
-		task.setBorder( new EtchedBorder(  ) );
 		task.setFont( task.getFont().deriveFont( Font.PLAIN ) );
 
 		setBorder( new EmptyBorder( PAD, PAD, PAD, PAD ) );
 
 		add( Box.createVerticalGlue() );
-		add( message );
+		add( step );
 		add( Box.createVerticalStrut( PAD ) );
 		add( progress );
 		add( Box.createVerticalStrut( PAD ) );
@@ -41,8 +39,8 @@ public class UpdaterPanel extends Box {
 		add( Box.createVerticalGlue() );
 	}
 
-	public void setMessage( String message ) {
-		this.message.setText( message );
+	public void setStep( String step ) {
+		this.step.setText( step );
 	}
 
 	public void setTask( String task ) {
@@ -70,10 +68,10 @@ public class UpdaterPanel extends Box {
 	}
 
 	public Dimension getPreferredSize() {
-		Dimension messageSize = message.getPreferredSize();
+		Dimension messageSize = step.getPreferredSize();
 		Dimension progressSize = progress.getPreferredSize();
 		Dimension taskSize = task.getPreferredSize();
-		return new Dimension( Math.max( messageSize.width, progressSize.width ) * 2, 4 * PAD + messageSize.height + progressSize.height + taskSize.height );
+		return new Dimension( Math.max( 300, Math.max( messageSize.width, progressSize.width ) ), 4 * PAD + messageSize.height + progressSize.height + taskSize.height );
 	}
 
 }

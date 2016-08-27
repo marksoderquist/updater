@@ -185,6 +185,8 @@ public final class Updater implements Product {
 			if( parameters.isSet( UpdaterFlag.UI ) ) {
 				window = new UpdaterWindow();
 				window.setTitle( card.getName() );
+				window.setStep( "Initializing..." );
+				window.setTask( "Initializing..." );
 			}
 
 			process();
@@ -193,8 +195,30 @@ public final class Updater implements Product {
 		}
 	}
 
+	private void showWindow() {
+		if( window == null ) return;
+		window.setProgressMax( updateTasks.size() );
+		window.pack();
+		SwingUtil.center( window );
+		window.setVisible( true );
+		window.requestFocus();
+	}
+
+	public void setStep( String step ) {
+		if( window != null ) window.setStep( step );
+	}
+
 	public void incrementProgress() {
 		if( window != null ) window.setProgress( window.getProgress() + 1 );
+	}
+
+	public void setTask( String task ) {
+		if( window != null ) window.setTask( task );
+	}
+
+	private void hideWindow() {
+		if( window == null ) return;
+		window.dispose();
 	}
 
 	private void process() {
@@ -203,11 +227,11 @@ public final class Updater implements Product {
 				// Launch an elevated updater.
 				int port = setupForCallback();
 				updateElevated( port );
-				if( window != null ) showWindow();
+				showWindow();
 				waitForCallback( port );
 			} else {
 				// Run the update tasks.
-				if( window != null ) showWindow();
+				showWindow();
 				runUpdateTasks();
 				ThreadUtil.pause( 500 );
 			}
@@ -215,16 +239,8 @@ public final class Updater implements Product {
 			// Run the launch tasks.
 			runLaunchTasks();
 		} finally {
-			if( window != null ) window.dispose();
+			hideWindow();
 		}
-	}
-
-	private void showWindow() {
-		window.setProgressMax( updateTasks.size() );
-		window.pack();
-		SwingUtil.center( window );
-		window.setVisible( true );
-		window.requestFocus();
 	}
 
 	private void updateElevated( int port ) {
@@ -354,27 +370,27 @@ public final class Updater implements Product {
 	private void runUpdateTasks() {
 		if( updateTasks.size() == 0 ) return;
 
-		window.setMessage( "Running update tasks..." );
+		setStep( "Running update tasks..." );
 
 		// Pause if an update delay is set.
 		if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
 			String delayValue = parameters.get( UpdaterFlag.UPDATE_DELAY );
-			window.setMessage( "Update waiting " + delayValue + "ms" );
+			setStep( "Update waiting " + delayValue + "ms" );
 			Log.write( "Update delay: ", delayValue, "ms" );
 			try {
-				window.setMessage( "Waiting for program to stop..." );
+				setStep( "Waiting for program to stop..." );
 				ThreadUtil.pause( Long.parseLong( delayValue ) );
 			} catch( NumberFormatException exception ) {
 				Log.write( exception );
 			}
 		}
 
-		if( parameters.isSet( UpdaterFlag.UI_MESSAGE ) ) window.setMessage( parameters.get( UpdaterFlag.UI_MESSAGE ) );
+		if( parameters.isSet( UpdaterFlag.UI_MESSAGE ) ) setStep( parameters.get( UpdaterFlag.UI_MESSAGE ) );
 
 		// Execute the update tasks.
 		for( UpdateTask task : updateTasks ) {
 			try {
-				window.setTask( task.toString() );
+				setTask( task.toString() );
 				task.execute();
 				incrementProgress();
 				callback( UPDATE );
@@ -389,12 +405,12 @@ public final class Updater implements Product {
 	private void runLaunchTasks() {
 		if( launchTasks.size() == 0 ) return;
 
-		window.setMessage( "Running launch tasks..." );
+		setStep( "Running launch tasks..." );
 
 		// Pause if a launch delay is set.
 		if( parameters.isSet( UpdaterFlag.LAUNCH_DELAY ) ) {
 			String delayValue = parameters.get( UpdaterFlag.LAUNCH_DELAY );
-			window.setMessage( "Launch waiting " + delayValue + "ms" );
+			setStep( "Launch waiting " + delayValue + "ms" );
 			Log.write( "Launch delay: ", delayValue, "ms" );
 			try {
 				ThreadUtil.pause( Long.parseLong( delayValue ) );
@@ -406,7 +422,7 @@ public final class Updater implements Product {
 		// Execute the launch tasks.
 		for( LaunchTask task : launchTasks ) {
 			try {
-				window.setTask( task.toString() );
+				setTask( task.toString() );
 				task.execute();
 			} catch( Throwable throwable ) {
 				Log.write( throwable );
