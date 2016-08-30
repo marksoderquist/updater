@@ -40,11 +40,11 @@ public class UpdaterPanel extends Box {
 	}
 
 	public void setStep( String step ) {
-		this.step.setText( step );
+		SwingUtilities.invokeLater( new SetStep( step ) );
 	}
 
 	public void setTask( String task ) {
-		this.task.setText( task );
+		SwingUtilities.invokeLater( new SetTask( task ) );
 	}
 
 	public void setProgressMin( int min ) {
@@ -72,6 +72,34 @@ public class UpdaterPanel extends Box {
 		Dimension progressSize = progress.getPreferredSize();
 		Dimension taskSize = task.getPreferredSize();
 		return new Dimension( Math.max( 300, Math.max( messageSize.width, progressSize.width ) ), 4 * PAD + messageSize.height + progressSize.height + taskSize.height );
+	}
+
+	private class SetStep implements Runnable {
+
+		private String text;
+
+		public SetStep( String text ) {
+			this.text = text;
+		}
+
+		public void run() {
+			step.setText( text );
+		}
+
+	}
+
+	private class SetTask implements Runnable {
+
+		private String text;
+
+		public SetTask( String text ) {
+			this.text = text;
+		}
+
+		public void run() {
+			task.setText( text );
+		}
+
 	}
 
 }
