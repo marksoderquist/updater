@@ -375,10 +375,10 @@ public final class Updater implements Product {
 		// Pause if an update delay is set.
 		if( parameters.isSet( UpdaterFlag.UPDATE_DELAY ) ) {
 			String delayValue = parameters.get( UpdaterFlag.UPDATE_DELAY );
-			setStep( "Update waiting " + delayValue + "ms" );
+			setTask( "Update waiting " + delayValue + "ms" );
 			Log.write( "Update delay: ", delayValue, "ms" );
 			try {
-				setStep( "Waiting for program to stop..." );
+				setTask( "Waiting for program to stop..." );
 				ThreadUtil.pause( Long.parseLong( delayValue ) );
 			} catch( NumberFormatException exception ) {
 				Log.write( exception );
@@ -410,7 +410,7 @@ public final class Updater implements Product {
 		// Pause if a launch delay is set.
 		if( parameters.isSet( UpdaterFlag.LAUNCH_DELAY ) ) {
 			String delayValue = parameters.get( UpdaterFlag.LAUNCH_DELAY );
-			setStep( "Launch waiting " + delayValue + "ms" );
+			setTask( "Launch waiting " + delayValue + "ms" );
 			Log.write( "Launch delay: ", delayValue, "ms" );
 			try {
 				ThreadUtil.pause( Long.parseLong( delayValue ) );

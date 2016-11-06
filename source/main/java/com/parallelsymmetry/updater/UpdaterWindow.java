@@ -26,12 +26,30 @@ public class UpdaterWindow extends JDialog implements KeyListener {
 		window.setStep( "Updating program..." );
 		window.setTask( "Copy foo.txt..." );
 		window.setAlwaysOnTop( true );
-		window.setProgress( 73 );
 		window.pack();
 
 		SwingUtil.center( window );
 		window.setVisible( true );
 		window.requestFocus();
+
+		// Test the window
+		int steps = 5;
+		int tasks = 20;
+		window.setProgressMax( steps * tasks );
+		try {
+			for( int step = 0; step < steps; step++ ) {
+				window.setStep( "Running step " + (step + 1) + "..." );
+				for( int task = 0; task < tasks; task++ ) {
+					window.setTask( "Performing task " + (task + 1) + "..." );
+					Thread.sleep( 50 );
+					window.setProgress( ((step * tasks) + task) + 1 );
+				}
+			}
+		} catch( InterruptedException exception ) {
+			// Intentionally ignore exception
+		}
+		window.setStep( "Complete!");
+		window.setTask( " " );
 	}
 
 	public void setStep( String step ) {
