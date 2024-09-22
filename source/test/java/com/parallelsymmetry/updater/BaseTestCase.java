@@ -4,10 +4,11 @@ import java.io.File;
 
 import com.parallelsymmetry.utility.FileUtil;
 import com.parallelsymmetry.utility.log.Log;
+import org.junit.jupiter.api.BeforeEach;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
-public abstract class BaseTestCase extends TestCase {
+public abstract class BaseTestCase {
 
 	protected Updater updater;
 
@@ -37,8 +38,8 @@ public abstract class BaseTestCase extends TestCase {
 
 	protected File update2 = new File( source, "update2.zip" );
 
-	@Override
-	public void setUp() throws Exception {
+	@BeforeEach
+	public void setup() throws Exception {
 		Log.setLevel( Log.NONE );
 
 		FileUtil.delete( target );

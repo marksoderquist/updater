@@ -5,23 +5,23 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.parallelsymmetry.pom</groupId>
+		<groupId>com.avereon.pom</groupId>
 		<artifactId>jar</artifactId>
-		<version>2.0.0-SNAPSHOT</version>
-		<relativePath></relativePath>
+		<version>3.5.4</version>
 	</parent>
 
 	<groupId>com.parallelsymmetry</groupId>
 	<artifactId>updater</artifactId>
 	<version>2.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
+	<inceptionYear>2010</inceptionYear>
 
 	<name>Parallel Symmetry Updater</name>
 
 	<repositories>
 		<repository>
-			<id>psm</id>
-			<url>https://code.xeomar.com/repo/psm</url>
+			<id>avn</id>
+			<url>https://repo.avereon.com/avn</url>
 		</repository>
 	</repositories>
 
@@ -57,7 +57,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.2</version>
 
 				<executions>
 					<execution>

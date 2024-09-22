@@ -1,9 +1,14 @@
 package com.parallelsymmetry.updater;
 
 import com.parallelsymmetry.utility.FileUtil;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FileUpdaterTaskTest extends BaseTestCase {
 
+	@Test
 	public void testExecute() throws Throwable {
 		new FileUpdateTask( update1, target ).execute();
 		assertEquals( "Sample 1 Version 1", FileUtil.load( sample1 ).trim() );

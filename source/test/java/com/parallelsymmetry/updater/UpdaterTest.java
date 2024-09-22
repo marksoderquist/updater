@@ -1,10 +1,12 @@
 package com.parallelsymmetry.updater;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.PrintStream;
+import com.parallelsymmetry.utility.*;
+import com.parallelsymmetry.utility.log.DefaultHandler;
+import com.parallelsymmetry.utility.log.Log;
+import com.parallelsymmetry.utility.Version;
+import org.junit.jupiter.api.Test;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.Date;
@@ -12,18 +14,11 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
 
-import com.parallelsymmetry.utility.Descriptor;
-import com.parallelsymmetry.utility.FileUtil;
-import com.parallelsymmetry.utility.LineParser;
-import com.parallelsymmetry.utility.OperatingSystem;
-import com.parallelsymmetry.utility.Release;
-import com.parallelsymmetry.utility.TextUtil;
-import com.parallelsymmetry.utility.Version;
-import com.parallelsymmetry.utility.log.DefaultHandler;
-import com.parallelsymmetry.utility.log.Log;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UpdaterTest extends BaseTestCase {
 
+	@Test
 	public void testCommandLineOutput() throws Exception {
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO ) );
 		assertCommandLineHeader( parser );
@@ -31,6 +26,7 @@ public class UpdaterTest extends BaseTestCase {
 		assertNull( parser.next() );
 	}
 
+	@Test
 	public void testVersionOutput() throws Exception {
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "-version" ) );
 		assertCommandLineHeader( parser );
@@ -38,6 +34,7 @@ public class UpdaterTest extends BaseTestCase {
 		assertNull( parser.next() );
 	}
 
+	@Test
 	public void testQuestionOutput() throws Exception {
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "-?" ) );
 		assertCommandLineHeader( parser );
@@ -45,6 +42,7 @@ public class UpdaterTest extends BaseTestCase {
 		assertNull( parser.next() );
 	}
 
+	@Test
 	public void testHelpOutput() throws Exception {
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "-help" ) );
 		assertCommandLineHeader( parser );
@@ -52,6 +50,7 @@ public class UpdaterTest extends BaseTestCase {
 		assertNull( parser.next() );
 	}
 
+	@Test
 	public void testVersionOutputUsingStdin() throws Exception {
 		InputStream stdin = System.in;
 		InputStream commandInput = new ByteArrayInputStream( "-version".getBytes( TextUtil.DEFAULT_CHARSET ) );
@@ -67,6 +66,7 @@ public class UpdaterTest extends BaseTestCase {
 
 	}
 
+	@Test
 	public void testHelpOutputUsingStdin() throws Exception {
 		InputStream stdin = System.in;
 		InputStream commandInput = new ByteArrayInputStream( "-help".getBytes( TextUtil.DEFAULT_CHARSET ) );
@@ -82,18 +82,21 @@ public class UpdaterTest extends BaseTestCase {
 
 	}
 
+	@Test
 	public void testUpdateOutputWithNoSource() throws Exception {
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "[E] java.lang.IllegalArgumentException: No update files specified.", parser.next() );
 	}
 
+	@Test
 	public void testUpdateOutputWithNoTarget() throws Exception {
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "test.zip" ) );
 		assertCommandLineHeader( parser );
 		assertEquals( "[E] java.lang.IllegalArgumentException: Target parameter not specified.", parser.next() );
 	}
 
+	@Test
 	public void testUpdateOutputWithInvalidSource() throws Exception {
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/test/update" ) );
 		assertCommandLineHeader( parser );
@@ -103,6 +106,7 @@ public class UpdaterTest extends BaseTestCase {
 		assertTrue( line.endsWith( "source" + File.separator + "test" + File.separator + "resources" + File.separator + "invalid.zip" ) );
 	}
 
+	@Test
 	public void testUpdateOutputWithMissingTarget() throws Exception {
 		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "source/test/resources/invalid.zip", "target/invalid" ) );
 		assertCommandLineHeader( parser );
@@ -112,8 +116,17 @@ public class UpdaterTest extends BaseTestCase {
 		assertTrue( line.endsWith( "target" + File.separator + "invalid" ) );
 	}
 
+	@Test
 	public void testSimultaneousUpdate() throws Exception {
-		LineParser parser = new LineParser( getCommandLineOutput( updater, Log.INFO, "--update", "source/test/resources/update1.zip", "target/test/update", "source/test/resources/update2.zip", "target/test/update" ) );
+		LineParser parser = new LineParser( getCommandLineOutput(
+			updater,
+			Log.INFO,
+			"--update",
+			"source/test/resources/update1.zip",
+			"target/test/update",
+			"source/test/resources/update2.zip",
+			"target/test/update"
+		) );
 		assertCommandLineHeader( parser );
 
 		assertEquals( "Sample 1 Version 2", FileUtil.load( sample1 ).trim() );
@@ -156,7 +169,7 @@ public class UpdaterTest extends BaseTestCase {
 
 		assertEquals( TextUtil.pad( 75, '-' ), parser.next() );
 		assertEquals( "Parallel Symmetry Updater " + release.getVersion().toHumanString(), parser.next() );
-		assertEquals( "(C) 2010-" + currentYear + " Parallel Symmetry All rights reserved.", parser.next() );
+		assertEquals( "(C) 2010-" + currentYear + " Avereon All rights reserved.", parser.next() );
 		assertEquals( "", parser.next() );
 		assertEquals( "Parallel Symmetry Updater comes with ABSOLUTELY NO WARRANTY. This is open", parser.next() );
 		assertEquals( "software, and you are welcome to redistribute it under certain conditions.", parser.next() );
@@ -169,7 +182,10 @@ public class UpdaterTest extends BaseTestCase {
 		assertEquals( "Java version: " + System.getProperty( "java.version" ), parser.next() );
 		assertEquals( "Java home: " + System.getProperty( "java.home" ), parser.next() );
 		assertEquals( "Default locale: " + Locale.getDefault() + "  encoding: " + Charset.defaultCharset(), parser.next() );
-		assertEquals( "OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily(), parser.next() );
+		assertEquals(
+			"OS name: " + OperatingSystem.getName() + "  version: " + OperatingSystem.getVersion() + "  arch: " + OperatingSystem.getSystemArchitecture() + "  family: " + OperatingSystem.getFamily(),
+			parser.next()
+		);
 		assertEquals( "", parser.next() );
 	}
 
