@@ -52,35 +52,34 @@
 			</resource>
 		</resources>
 
-		<plugins>
+<!--		<plugins>-->
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
+<!--&lt;!&ndash;			<plugin>&ndash;&gt;-->
+<!--&lt;!&ndash;				<groupId>org.apache.maven.plugins</groupId>&ndash;&gt;-->
+<!--&lt;!&ndash;				<artifactId>maven-assembly-plugin</artifactId>&ndash;&gt;-->
+<!--&lt;!&ndash;				<executions>&ndash;&gt;-->
+<!--&lt;!&ndash;					<execution>&ndash;&gt;-->
+<!--&lt;!&ndash;						<phase>package</phase>&ndash;&gt;-->
+<!--&lt;!&ndash;						<goals>&ndash;&gt;-->
+<!--&lt;!&ndash;							<goal>single</goal>&ndash;&gt;-->
+<!--&lt;!&ndash;						</goals>&ndash;&gt;-->
+<!--&lt;!&ndash;					</execution>&ndash;&gt;-->
+<!--&lt;!&ndash;				</executions>&ndash;&gt;-->
+<!--&lt;!&ndash;				<configuration>&ndash;&gt;-->
+<!--&lt;!&ndash;					<appendAssemblyId>false</appendAssemblyId>&ndash;&gt;-->
+<!--&lt;!&ndash;					<descriptors>&ndash;&gt;-->
+<!--&lt;!&ndash;						<descriptor>source/main/assembly/standalone.xml</descriptor>&ndash;&gt;-->
+<!--&lt;!&ndash;					</descriptors>&ndash;&gt;-->
+<!--&lt;!&ndash;          <archive>&ndash;&gt;-->
+<!--&lt;!&ndash;            <manifest>&ndash;&gt;-->
+<!--&lt;!&ndash;              <addClasspath>true</addClasspath>&ndash;&gt;-->
+<!--&lt;!&ndash;              <mainClass>com.parallelsymmetry.updater.Updater</mainClass>&ndash;&gt;-->
+<!--&lt;!&ndash;            </manifest>&ndash;&gt;-->
+<!--&lt;!&ndash;          </archive>&ndash;&gt;-->
+<!--&lt;!&ndash;				</configuration>&ndash;&gt;-->
+<!--&lt;!&ndash;			</plugin>&ndash;&gt;-->
 
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<appendAssemblyId>false</appendAssemblyId>
-					<descriptors>
-						<descriptor>source/main/assembly/standalone.xml</descriptor>
-					</descriptors>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <mainClass>com.parallelsymmetry.updater.Updater</mainClass>
-            </manifest>
-          </archive>
-				</configuration>
-			</plugin>
-
-		</plugins>
+<!--		</plugins>-->
 
 	</build>
 

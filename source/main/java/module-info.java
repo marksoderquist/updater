@@ -4,8 +4,8 @@ module com.parallelsymmetry.updater {
 	// Compile and runtime
 	requires com.parallelsymmetry.utility;
 	requires java.desktop;
-	requires java.management;
 	requires java.logging;
+	requires java.management;
 
 	exports com.parallelsymmetry.updater;
 }
