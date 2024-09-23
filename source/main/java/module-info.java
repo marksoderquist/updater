@@ -1,5 +1,4 @@
 module com.parallelsymmetry.updater {
-	exports com.parallelsymmetry.updater;
 	// Compile time only
 
 	// Compile and runtime
@@ -7,4 +6,6 @@ module com.parallelsymmetry.updater {
 	requires java.desktop;
 	requires java.management;
 	requires java.logging;
+
+	exports com.parallelsymmetry.updater;
 }
